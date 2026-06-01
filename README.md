@@ -2,20 +2,29 @@
 
 A Quarto format extension that produces brand-compliant PDF reports for
 Probity Data Analytics: navy/gold palette, Calibri type, logo cover page,
-running header and footer, and styled tables. No LaTeX required — output is
-PDF via the bundled Typst compiler.
+running header and footer, and styled tables. Output is PDF via Typst —
+no LaTeX installation required.
 
 ## Quick start
 
 ```bash
-cp template.qmd my-report.qmd     # start from the example
-quarto render my-report.qmd       # produces my-report.pdf
+cp template.qmd my-report.qmd
+quarto render my-report.qmd     # produces my-report.pdf
 ```
 
-In the front matter, set:
+Minimum front matter:
 
 ```yaml
+---
+title: "Report Title"
+subtitle: "A short descriptive subtitle"
+author: "Author Name, Role"
+date: today
 format: probity-typst
+lang: en-GB
+abstract: |
+  One short paragraph: what this document is and what it concludes.
+---
 ```
 
 ## What's here
@@ -28,19 +37,18 @@ format: probity-typst
 | `_extensions/probity/assets/` | Probity logo files |
 | `template.qmd` | Starter document |
 | `SKILL.md` | Full guide: usage, brand rules, writing voice |
-| `install.sh` | Helper script to install into another project |
+| `install.sh` | Installs the extension into another project |
 
 ## Using it in another project
 
 ### Option A: install script (recommended)
 
 ```bash
-# From the probity_pdf repo:
 ./install.sh /path/to/target/project
 ```
 
-The script copies `_extensions/probity/` into the target and validates the
-installation.
+Copies `_extensions/probity/` into the target and creates a minimal
+`_quarto.yml` if one does not exist.
 
 ### Option B: manual copy
 
@@ -48,20 +56,19 @@ installation.
 cp -r _extensions/probity /path/to/target/project/_extensions/
 ```
 
-Then set `format: probity-typst` in the document's front matter.
+Then set `format: probity-typst` in your document's front matter.
 
-### Important: directory structure
+### Required directory structure
 
-Quarto discovers extensions by walking up from the document to the project
-root. For documents in subdirectories, two things are required:
+Quarto walks up from the document to the project root to find
+`_extensions/`. For documents in subdirectories, two things are required:
 
-1. `_extensions/probity/` must live at the project root.
-2. A `_quarto.yml` must exist at the project root so Quarto can identify
-   the project boundary.
+1. `_extensions/probity/` is a direct child of the project root.
+2. A `_quarto.yml` exists at the project root (even a minimal one).
 
 ```
 my-project/
-  _quarto.yml              # required — marks the project root
+  _quarto.yml              ← required: marks the project root
   _extensions/
     probity/
       _extension.yml
@@ -70,31 +77,55 @@ my-project/
       assets/
   pipeline/
     docs/
-      report.qmd          # format: probity-typst
+      report.qmd           ← format: probity-typst
 ```
 
-A minimal `_quarto.yml`:
+Minimal `_quarto.yml`:
 
 ```yaml
 project:
   title: "My Project"
 ```
 
+The install script creates this automatically if it is missing.
+
 ## Troubleshooting
 
 ### `Unable to read the extension 'probity'`
 
-Most likely a missing `_quarto.yml` at the project root. See the directory
-structure section above.
+Missing `_quarto.yml` at the project root. See the directory structure
+above. The install script creates one; if you copied the extension
+manually, create it yourself.
+
+### `file not found ... assets/logo_trim.png`
+
+The `_extensions/probity/` directory is not a direct child of the project
+root. The Typst compiler resolves image paths relative to the project root,
+so the extension must live at `<root>/_extensions/probity/`. Re-run
+`install.sh` from the correct root.
 
 ### Font not found (Calibri)
 
-Calibri is a Microsoft font. On Linux without Microsoft fonts installed, the
-template falls back to Carlito, then Liberation Sans, then Arial. Install
-Carlito (`fonts-crosextra-carlito` on Debian/Ubuntu) for the closest match.
+Calibri is a Microsoft font. On Linux the template falls back to Carlito,
+then Liberation Sans, then Arial. Install Carlito for the closest match:
 
-### Modifying the template
+```bash
+sudo apt-get install fonts-crosextra-carlito   # Debian / Ubuntu
+```
 
-Edit `_extensions/probity/typst-template.typ` (colour constants, layout,
-fonts) then re-render `template.qmd` to confirm. See `SKILL.md` for the
-full brand specification and writing voice.
+### Header and footer missing on page 1
+
+Expected behaviour. The cover page intentionally has no running header or
+footer. They appear from page 2 onward.
+
+## Modifying the template
+
+Edit `_extensions/probity/typst-template.typ` (colour constants, font
+stacks, layout), then re-render `template.qmd` to confirm. The
+`typst-show.typ` file wires front-matter variables into the template
+function; only edit it to expose additional variables.
+
+The template targets Typst 0.10 (bundled with Quarto 1.4) and avoids
+`context { }` blocks and `table.cell` selectors, which require Typst 0.11+.
+
+See `SKILL.md` for the full brand specification and Probity writing voice.
