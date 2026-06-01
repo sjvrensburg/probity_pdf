@@ -77,25 +77,23 @@
   set par(leading: 0.75em, justify: true)
 
   // ── Heading styles ──────────────────────────────────────────────────────
+  // Space above each heading is weak (collapses at a page top); space below is
+  // a fixed block so the heading is never cramped against the following text.
   show heading.where(level: 1): it => {
     v(1.4em, weak: true)
-    text(size: 18pt, weight: "bold", fill: probity-navy, font: body-font)[#it.body]
-    v(0.5em, weak: true)
+    block(below: 0.8em, text(size: 18pt, weight: "bold", fill: probity-navy, font: body-font)[#it.body])
   }
   show heading.where(level: 2): it => {
     v(1.1em, weak: true)
-    text(size: 14pt, weight: "bold", fill: probity-navy, font: body-font)[#it.body]
-    v(0.35em, weak: true)
+    block(below: 0.65em, text(size: 14pt, weight: "bold", fill: probity-navy, font: body-font)[#it.body])
   }
   show heading.where(level: 3): it => {
     v(0.9em, weak: true)
-    text(size: 12pt, weight: "bold", fill: probity-deep-navy, font: body-font)[#it.body]
-    v(0.25em, weak: true)
+    block(below: 0.55em, text(size: 12pt, weight: "bold", fill: probity-deep-navy, font: body-font)[#it.body])
   }
   show heading.where(level: 4): it => {
     v(0.7em, weak: true)
-    text(size: 11pt, weight: "bold", style: "italic", fill: probity-deep-navy, font: body-font)[#it.body]
-    v(0.15em, weak: true)
+    block(below: 0.45em, text(size: 11pt, weight: "bold", style: "italic", fill: probity-deep-navy, font: body-font)[#it.body])
   }
 
   // ── Strong (bold) ── navy tint ──────────────────────────────────────────
