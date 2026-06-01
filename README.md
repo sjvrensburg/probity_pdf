@@ -1,11 +1,17 @@
-# Probity Data Analytics — Quarto PDF template
+# Probity Data Analytics — Quarto PDF templates
 
-A Quarto format extension that produces brand-compliant PDF reports for
-Probity Data Analytics: navy/gold palette, Calibri type, logo cover page,
-running header and footer, and styled tables. Output is PDF via Typst —
-no LaTeX installation required.
+A Quarto format extension providing two branded PDF output formats for
+Probity Data Analytics: navy/gold palette, Calibri type, and Probity
+visual identity.
+
+| Format | Output | Engine | Use for |
+|---|---|---|---|
+| `probity-typst` | A4 report | Typst (no LaTeX) | Written reports, methodology, deliverables |
+| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Client presentations, slide decks |
 
 ## Quick start
+
+### Report
 
 ```bash
 cp template.qmd my-report.qmd
@@ -27,15 +33,38 @@ abstract: |
 ---
 ```
 
+### Slide deck
+
+```bash
+cp template-slides.qmd my-slides.qmd
+quarto render my-slides.qmd     # produces my-slides.pdf
+```
+
+Minimum front matter:
+
+```yaml
+---
+title: "Presentation Title"
+subtitle: "A short descriptive subtitle"
+author: "Author Name, Role"
+date: today
+format: probity-beamer
+lang: en-GB
+---
+```
+
 ## What's here
 
 | Path | Purpose |
 |---|---|
-| `_extensions/probity/` | The Quarto format extension (`probity-typst`) |
-| `_extensions/probity/typst-template.typ` | Typst template function |
-| `_extensions/probity/typst-show.typ` | Pandoc partial wiring front matter |
+| `_extensions/probity/` | The Quarto format extension |
+| `_extensions/probity/_extension.yml` | Format definitions (`probity-typst`, `probity-beamer`) |
+| `_extensions/probity/typst-template.typ` | Typst template function (report) |
+| `_extensions/probity/typst-show.typ` | Pandoc partial wiring front matter (report) |
+| `_extensions/probity/probity-beamer.sty` | Beamer theme (slides) |
 | `_extensions/probity/assets/` | Probity logo files |
-| `template.qmd` | Starter document |
+| `template.qmd` | Starter report document |
+| `template-slides.qmd` | Starter slide deck |
 | `SKILL.md` | Full guide: usage, brand rules, writing voice |
 | `install.sh` | Installs the extension into another project |
 
@@ -44,15 +73,15 @@ abstract: |
 ### Option A: install script (recommended)
 
 ```bash
-./install.sh /path/to/target/project                 # report at the project root
-./install.sh /path/to/target/project pipeline/docs   # report in a subdirectory
+./install.sh /path/to/target/project                 # document at the project root
+./install.sh /path/to/target/project pipeline/docs   # document in a subdirectory
 ```
 
 Copies `_extensions/probity/` into the target and creates a minimal
-`_quarto.yml` if one does not exist. If the report will live in a
+`_quarto.yml` if one does not exist. If the document will live in a
 **subdirectory**, pass that subdirectory as a second argument — the script then
-also places the extension next to the report, which is required for a
-subdirectory report to render (see [Required directory
+also places the extension next to the document, which is required for a
+subdirectory document to render (see [Required directory
 structure](#required-directory-structure)). The default is a copy (portable,
 Windows-safe); `--link` makes a relative symlink instead on Unix.
 
@@ -62,11 +91,12 @@ Windows-safe); `--link` makes a relative symlink instead on Unix.
 cp -r _extensions/probity /path/to/target/project/_extensions/
 ```
 
-Then set `format: probity-typst` in your document's front matter.
+Then set `format: probity-typst` or `format: probity-beamer` in your
+document's front matter.
 
 ### Required directory structure
 
-A report **at the project root** — beside `_extensions/` and `_quarto.yml` —
+A document **at the project root** — beside `_extensions/` and `_quarto.yml` —
 renders with no special handling:
 
 ```
@@ -74,10 +104,10 @@ my-project/
   _quarto.yml              ← marks the project root
   _extensions/
     probity/
-  report.qmd               ← format: probity-typst
+  report.qmd               ← format: probity-typst  (or probity-beamer)
 ```
 
-A report in a **subdirectory** is trickier, for two independent reasons:
+A document in a **subdirectory** is trickier, for two independent reasons:
 
 1. **Discovery.** Quarto finds `_extensions/` by walking up from the `.qmd` only
    as far as the project root (the nearest ancestor with a `_quarto.yml`).
@@ -91,9 +121,9 @@ A report in a **subdirectory** is trickier, for two independent reasons:
    and fails with `file not found ... assets/logo_trim.png`, even with the
    extension correctly installed at the project root.
 
-Because of (2), the reliable layout for a subdirectory report is to **co-locate
-the extension with the report**. The install script does this when you pass the
-report's subdirectory:
+Because of (2), the reliable layout for a subdirectory document is to **co-locate
+the extension with the document**. The install script does this when you pass the
+document's subdirectory:
 
 ```bash
 ./install.sh my-project pipeline/docs
@@ -107,8 +137,8 @@ my-project/
   pipeline/
     docs/
       _extensions/
-        probity/             ← co-located copy, next to the report
-      report.qmd             ← format: probity-typst
+        probity/             ← co-located copy, next to the document
+      report.qmd             ← format: probity-typst  (or probity-beamer)
 ```
 
 Use `--link` to symlink the co-located copy back to the project-root one instead
@@ -122,15 +152,53 @@ project:
 
 The install script creates this automatically if it is missing.
 
+## Authoring slides
+
+### Slide sections
+
+Use a `## {.plain}` heading followed by a raw LaTeX block to insert a
+full-navy section divider slide:
+
+```markdown
+## {.plain}
+
+```{=latex}
+\ProbSectionContent{Part One: Findings}{}
+\ProbSectionContent{Part Two: Method}{How we built it}
+```
+```
+
+The first argument is the section title; the second is an optional subtitle
+(leave empty `{}` to omit). The `{.plain}` attribute suppresses the running
+header and footer so the TikZ navy background fills the entire slide.
+
+### Closing slide
+
+Use a plain `## Closing` heading and add raw LaTeX for the centred content:
+
+```markdown
+## Closing
+
+\vspace{1.2cm}
+
+\begin{center}
+{\large\color{probitynavy}\textbf{Thank you}}
+
+\vspace{0.4cm}
+
+{\normalsize\color{probitymuted}Questions and discussion}
+\end{center}
+```
+
 ## Troubleshooting
 
 ### `Unable to read the extension 'probity'`
 
-Quarto could not discover `_extensions/` while walking up from the report to
+Quarto could not discover `_extensions/` while walking up from the document to
 the project root. Usual causes: no `_quarto.yml` at the project root (e.g. after
 `quarto add`), or an intermediate `_quarto.yml` in a subdirectory that
-re-anchors the root below `_extensions/`. For a report at the project root,
-ensure a root `_quarto.yml` exists. For a report in a subdirectory, co-locate
+re-anchors the root below `_extensions/`. For a document at the project root,
+ensure a root `_quarto.yml` exists. For a document in a subdirectory, co-locate
 the extension with it: `./install.sh <project> <report-subdir>` (see [Required
 directory structure](#required-directory-structure)).
 
@@ -148,28 +216,52 @@ project root. Co-locate the extension with the report:
 
 Or move the report up to the project root, beside `_extensions/`.
 
-### Font not found (Calibri)
+### Beamer package not installed
 
-Calibri is a Microsoft font. On Linux the template falls back to Carlito,
-then Liberation Sans, then Arial. Install Carlito for the closest match:
+On first render, Quarto attempts to install `beamer.cls` automatically via
+TinyTeX. If auto-install is disabled, install it manually:
+
+```bash
+tlmgr install beamer
+```
+
+### Font not found (Calibri / Carlito)
+
+**Report (`probity-typst`):** Calibri is a Microsoft font. On Linux the template
+falls back to Carlito, then Liberation Sans, then Arial.
+
+**Slides (`probity-beamer`):** the theme requires Carlito (the metric-compatible
+Calibri substitute). Install it:
 
 ```bash
 sudo apt-get install fonts-crosextra-carlito   # Debian / Ubuntu
 ```
 
-### Header and footer missing on page 1
+### Header and footer missing on page 1 (report)
 
 Expected behaviour. The cover page intentionally has no running header or
 footer. They appear from page 2 onward.
 
-## Modifying the template
+### Header missing on section divider slides
 
-Edit `_extensions/probity/typst-template.typ` (colour constants, font
-stacks, layout), then re-render `template.qmd` to confirm. The
-`typst-show.typ` file wires front-matter variables into the template
-function; only edit it to expose additional variables.
+Expected behaviour. Section divider slides use `{.plain}`, which suppresses the
+running header and footer via Beamer's built-in mechanism, leaving only the TikZ
+navy background.
+
+## Modifying the templates
+
+**Report:** edit `_extensions/probity/typst-template.typ` (colour constants,
+font stacks, layout), then re-render `template.qmd` to confirm. The
+`typst-show.typ` file wires front-matter variables into the template function;
+only edit it to expose additional variables.
 
 The template targets Typst 0.10 (bundled with Quarto 1.4) and avoids
 `context { }` blocks and `table.cell` selectors, which require Typst 0.11+.
+
+**Slides:** edit `_extensions/probity/probity-beamer.sty` (colour definitions,
+headline/footline templates, title page and section divider TikZ). Do **not**
+call `\setsansfont` inside the `.sty` — Quarto's `font-settings.latex` partial
+handles this via the `sansfont: Carlito` option in `_extension.yml`, and a
+double call causes a fontspec error.
 
 See `SKILL.md` for the full brand specification and Probity writing voice.

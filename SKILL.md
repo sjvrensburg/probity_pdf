@@ -1,14 +1,17 @@
 ---
-name: probity-quarto-typst
-description: "Create branded PDF reports for Probity Data Analytics using the Quarto Typst extension in this repository. Use this skill whenever the user asks to write, draft, restyle, or produce a Probity PDF report from Quarto or Markdown: methodology write-ups, technical reports, audit-trail documents, memos, proposals, client deliverables, or anything that will leave the studio under the Probity name. Trigger it even when the user only says 'make a Probity report', 'use our PDF template', 'apply our branding', or attaches a Quarto/Markdown file to convert. Output is a PDF file (not Word/docx). It pins down the navy/gold palette, Calibri type, logo cover page, running header and footer, table styling, and the Probity writing voice."
+name: probity-quarto
+description: "Create branded PDF outputs for Probity Data Analytics using the Quarto extension in this repository. Use this skill whenever the user asks to write, draft, restyle, or produce a Probity PDF report or slide deck from Quarto or Markdown: methodology write-ups, technical reports, audit-trail documents, memos, proposals, client deliverables, presentations, or anything that will leave the studio under the Probity name. Trigger it even when the user only says 'make a Probity report', 'use our PDF template', 'apply our branding', or attaches a Quarto/Markdown file to convert. Output is always a PDF file (not Word/docx). Two formats are available: probity-typst (A4 report, no LaTeX) and probity-beamer (16:9 slides, XeLaTeX). It pins down the navy/gold palette, Calibri type, Probity visual identity, and the Probity writing voice."
 ---
 
-# Probity Data Analytics — Quarto PDF template (agent guide)
+# Probity Data Analytics — Quarto PDF templates (agent guide)
 
-This skill produces brand-compliant PDF reports for Probity Data Analytics
-through Quarto, using a Typst-based format extension (`probity-typst`). No
-LaTeX installation is required. Authors write plain Quarto (`.qmd`) and set
-`format: probity-typst`; the extension handles all chrome and styling.
+This skill produces brand-compliant PDF outputs for Probity Data Analytics
+through Quarto. Two formats are available:
+
+| Format | Output | Engine | Use for |
+|---|---|---|---|
+| `probity-typst` | A4 report | Typst — no LaTeX required | Written reports, methodology, deliverables |
+| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Client presentations, slide decks |
 
 The extension lives at `/home/stefan/Documents/probity_pdf/` (the
 `probity_pdf` repository). When working in an external project, install it
@@ -72,13 +75,17 @@ Prefer keeping reports at the project root when you can.
 
 ### Step 3 — Write or update the `.qmd`
 
-If starting fresh, copy the starter document:
+If starting fresh, copy the appropriate starter document:
 
 ```bash
+# Report
 cp /home/stefan/Documents/probity_pdf/template.qmd <project-root>/my-report.qmd
+
+# Slide deck
+cp /home/stefan/Documents/probity_pdf/template-slides.qmd <project-root>/my-slides.qmd
 ```
 
-Then write or edit the content. Required front matter:
+**Report front matter** (`format: probity-typst`):
 
 ```yaml
 ---
@@ -94,8 +101,6 @@ abstract: |
 ---
 ```
 
-All front-matter fields and their effects:
-
 | Field | Effect | Required |
 |---|---|---|
 | `title` | Large navy heading on cover page (30pt bold) | Yes |
@@ -106,6 +111,53 @@ All front-matter fields and their effects:
 | `lang` | Document language; use `en-GB` for Probity | Recommended |
 | `abstract` | Pale-tint block with navy left border on cover | Recommended |
 | `toc` | `true` (default) shows a Contents page; set `false` to suppress | Optional |
+
+**Slide deck front matter** (`format: probity-beamer`):
+
+```yaml
+---
+title: "Presentation Title"
+subtitle: "A short descriptive subtitle"
+author: "Author Name, Role"
+date: today
+format: probity-beamer
+lang: en-GB
+---
+```
+
+| Field | Effect | Required |
+|---|---|---|
+| `title` | Bold white title on the navy title slide | Yes |
+| `subtitle` | Gold subtitle below title on the title slide | Recommended |
+| `author` | Light-blue author line at bottom of title slide | Recommended |
+| `date` | Appended to author, separated by a pipe | Recommended |
+| `format` | Must be `probity-beamer` | Yes |
+| `lang` | Document language; use `en-GB` for Probity | Recommended |
+
+**Slide authoring — section dividers:**
+
+Use a `## {.plain}` heading followed by a raw LaTeX block to insert a
+full-navy section divider slide. The `{.plain}` attribute suppresses the
+running header and footer so the TikZ navy background fills the entire slide.
+
+```markdown
+## {.plain}
+
+```{=latex}
+\ProbSectionContent{Part One: Findings}{}
+\ProbSectionContent{Part Two: Method}{How we built it}
+```
+```
+
+The first argument is the section title; the second is an optional subtitle
+(pass empty `{}` to omit). Do **not** wrap `\ProbSectionContent` in a
+`\begin{frame}` — the `##` heading already creates the frame.
+
+**Slide authoring — content slides:**
+
+Standard Quarto Markdown. Each `##` heading becomes a slide. Supported:
+bullet lists, numbered lists, two-column layouts (Pandoc `.columns` div),
+pipe tables, fenced code blocks, and raw LaTeX blocks.
 
 ### Step 4 — Apply writing conventions
 
@@ -119,13 +171,13 @@ as you draft; do not write loosely then clean up.
 quarto render <path-to-file>.qmd
 ```
 
-Output is `<file>.pdf` in the same directory as the `.qmd`. A report in a
+Output is `<file>.pdf` in the same directory as the `.qmd`. A document in a
 subdirectory renders only if the extension has been co-located with it (Step 2);
 otherwise it fails at discovery or at logo loading.
 
 ### Step 6 — Visual check
 
-Convert the PDF to images and inspect every page:
+**Report:**
 
 ```bash
 pdftoppm -png -r 90 <file>.pdf build/pg
@@ -142,6 +194,23 @@ Confirm on every page:
 - **Body pages:** same header and footer. Navy H1, navy H2, deep-navy H3.
   Tables with rule-band header row. Blockquotes with mid-blue left border
   and pale-tint fill. Code blocks on pale-tint background.
+
+**Slide deck:**
+
+```bash
+pdftoppm -png -r 144 <file>.pdf build/slides-pg
+```
+
+Confirm on every slide:
+
+- **Title slide (1):** full navy background, gold vertical bar at left edge,
+  white Probity logo top-left, bold white title, gold subtitle, gold rule,
+  light-blue author/date. No running header or footer.
+- **Content slides:** navy bold title top-left, Probity logo top-right (both
+  vertically centred in the header band), `#D5DEE9` hairline below the header.
+  White body area. Page number bottom-right. No other footer elements.
+- **Section dividers:** full navy background, gold vertical bar, bold white
+  title, gold rule, optional gold subtitle. No header or footer visible.
 
 ### Step 7 — Voice and spelling pass
 
@@ -230,8 +299,8 @@ Apply every rule to every word in a Probity document.
 | Rule / hairline | `#D5DEE9` |
 | Primary font | Calibri (Carlito → Liberation Sans → Arial fallback) |
 | Mono / code | Consolas (Courier New → Liberation Mono fallback) |
-| Output format | `probity-typst` (PDF via Typst, no LaTeX) |
-| Page size | A4 |
+| Report format | `probity-typst` — PDF via Typst, no LaTeX required; page size A4 |
+| Slides format | `probity-beamer` — PDF via XeLaTeX + Beamer; aspect ratio 16:9 |
 
 ---
 
@@ -241,57 +310,71 @@ Apply every rule to every word in a Probity document.
 Quarto could not discover `_extensions/` while walking up to the project root.
 Causes: no `_quarto.yml` at the project root (e.g. after `quarto add`), or an
 intermediate `_quarto.yml` that re-anchors the root below `_extensions/`. For a
-root-level report, create a root `_quarto.yml` (`project:\n  title: "My
-Project"`). For a subdirectory report, co-locate the extension:
-`install.sh <project> <report-subdir>`.
+root-level document, create a root `_quarto.yml` (`project:\n  title: "My
+Project"`). For a subdirectory document, co-locate the extension:
+`install.sh <project> <subdir>`.
 
 **`file not found ... assets/logo_trim.png`**
 The Typst template loads its logo via `_extensions/probity/assets/...`, resolved
 relative to the **report's own directory**. A subdirectory report fails here even
-when the extension is installed at the project root, because there is no
-`_extensions/probity/` beside the report. Co-locate it:
-`install.sh <project> <report-subdir>` — or move the report to the project root.
+when the extension is installed at the project root. Co-locate it:
+`install.sh <project> <subdir>` — or move the report to the project root.
 
 **`error: expected comma` or similar Typst parse errors**
-A front-matter field value contains characters that break the Typst
-template. Check for unescaped special characters in `title`, `subtitle`,
-`author`, or `abstract`.
+A front-matter field value contains characters that break the Typst template.
+Check for unescaped special characters in `title`, `subtitle`, `author`, or
+`abstract`.
 
-**Font not found (Calibri)**
-On Linux without Microsoft fonts, the template falls back to Carlito, then
-Liberation Sans, then Arial. Install Carlito for the closest match:
+**Beamer package not installed**
+On first render, Quarto attempts to install `beamer.cls` automatically via
+TinyTeX. If that fails: `tlmgr install beamer`.
+
+**Font not found (Calibri / Carlito)**
+On Linux without Microsoft fonts, the report template falls back to Carlito,
+then Liberation Sans, then Arial. The slide theme requires Carlito explicitly.
+Install it:
 ```bash
 sudo apt-get install fonts-crosextra-carlito   # Debian/Ubuntu
 ```
-The PDF will render correctly with any fallback font; only the typeface
-changes.
 
-**Render succeeds but header/footer missing on page 1**
-This is correct behaviour. The cover page intentionally has no running
-header or footer. They appear from page 2 onward.
+**Render succeeds but header/footer missing on page 1 (report)**
+Correct behaviour. The cover page has no running header or footer by design.
+
+**Header missing on section divider slides**
+Correct behaviour. `{.plain}` suppresses the headline and footline via
+Beamer's built-in mechanism, leaving only the TikZ navy background.
 
 ---
 
-## Modifying the template
+## Modifying the templates
 
-Edit `_extensions/probity/typst-template.typ` (colour constants, font
-stacks, layout) then re-render `template.qmd` to confirm. The
+**Report:** edit `_extensions/probity/typst-template.typ` (colour constants,
+font stacks, layout) then re-render `template.qmd` to confirm. The
 `typst-show.typ` file wires front-matter variables into the
 `probity-report()` function; only edit it to expose additional variables.
 
 **Typst 0.10 constraint.** Quarto 1.4 bundles Typst 0.10. The template
 avoids `context { }` blocks and `table.cell` selectors (both require Typst
-0.11+). Use `locate(loc => ...)` for any page-aware additions. If the
-project upgrades to Quarto 1.5+, these constraints lift.
+0.11+). Use `locate(loc => ...)` for any page-aware additions.
+
+**Slides:** edit `_extensions/probity/probity-beamer.sty` (colour
+definitions, headline/footline templates, title page and section divider
+TikZ). Do **not** call `\setsansfont` inside the `.sty` — Quarto's
+`font-settings.latex` partial handles this via `sansfont: Carlito` in
+`_extension.yml`; a double call causes a fontspec error. After edits,
+re-render `template-slides.qmd` and inspect with `pdftoppm -r 144`.
 
 ---
 
 ## Files in this repository
 
-- `_extensions/probity/_extension.yml` — format definition (`probity-typst`)
-- `_extensions/probity/typst-template.typ` — Typst template function
-- `_extensions/probity/typst-show.typ` — Pandoc partial wiring front matter
+- `_extensions/probity/_extension.yml` — format definitions (`probity-typst`, `probity-beamer`)
+- `_extensions/probity/typst-template.typ` — Typst template function (report)
+- `_extensions/probity/typst-show.typ` — Pandoc partial wiring front matter (report)
+- `_extensions/probity/probity-beamer.sty` — Beamer theme (slides)
 - `_extensions/probity/assets/logo_trim.png` — cover page wordmark
-- `_extensions/probity/assets/logo_navy_small.png` — header wordmark
-- `template.qmd` — starter document
+- `_extensions/probity/assets/logo_navy_small.png` — running header wordmark (slides: top-right)
+- `_extensions/probity/assets/logo_white.png` — white logo for navy backgrounds (title slide)
+- `template.qmd` — starter report document
+- `template-slides.qmd` — starter slide deck
 - `install.sh` — installs the extension into another project
