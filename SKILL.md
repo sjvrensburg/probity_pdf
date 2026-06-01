@@ -43,6 +43,10 @@ If missing, install it:
 
 ```bash
 /home/stefan/Documents/probity_pdf/install.sh <project-root>
+
+# If the report will live in a subdirectory, pass it as a second argument so
+# the extension is co-located with the report (required — see below):
+/home/stefan/Documents/probity_pdf/install.sh <project-root> pipeline/docs
 ```
 
 The script copies `_extensions/probity/` into the target and creates a
@@ -54,11 +58,17 @@ ls <project-root>/_extensions/probity/_extension.yml   # must exist
 ls <project-root>/_quarto.yml                          # must exist
 ```
 
-**Critical: `_quarto.yml` at the project root.** Without it, Quarto cannot
-discover the extension when documents are in subdirectories, and rendering
-fails with "Unable to read the extension 'probity'". The install script
-creates a minimal one automatically, but verify it is present if you are
-installing manually.
+**Critical: subdirectory reports need the extension co-located.** A report at
+the project root renders with no special handling. A report in a *subdirectory*
+hits two problems: (1) Quarto only discovers `_extensions/` by walking up to the
+project root, so a missing or intermediate `_quarto.yml` yields "Unable to read
+the extension 'probity'"; and (2) the Typst template loads its logo via
+`_extensions/probity/assets/...`, a path resolved relative to the **report's own
+directory**, so a subdirectory report fails with "file not found ...
+logo_trim.png" even when the extension is installed at the project root. Both are
+fixed by co-locating the extension with the report — pass the report subdirectory
+to `install.sh` as shown above (it copies by default; `--link` symlinks on Unix).
+Prefer keeping reports at the project root when you can.
 
 ### Step 3 — Write or update the `.qmd`
 
@@ -105,13 +115,13 @@ as you draft; do not write loosely then clean up.
 
 ### Step 5 — Render
 
-Run from the project root (not from a subdirectory):
-
 ```bash
 quarto render <path-to-file>.qmd
 ```
 
-Output is `<file>.pdf` in the same directory as the `.qmd`.
+Output is `<file>.pdf` in the same directory as the `.qmd`. A report in a
+subdirectory renders only if the extension has been co-located with it (Step 2);
+otherwise it fails at discovery or at logo loading.
 
 ### Step 6 — Visual check
 
@@ -221,17 +231,19 @@ Apply every rule to every word in a Probity document.
 ## Troubleshooting
 
 **`Unable to read the extension 'probity'`**
-Most likely a missing `_quarto.yml` at the project root. Quarto needs this
-to walk up from subdirectories to `_extensions/`. Create one:
-```yaml
-project:
-  title: "My Project"
-```
+Quarto could not discover `_extensions/` while walking up to the project root.
+Causes: no `_quarto.yml` at the project root (e.g. after `quarto add`), or an
+intermediate `_quarto.yml` that re-anchors the root below `_extensions/`. For a
+root-level report, create a root `_quarto.yml` (`project:\n  title: "My
+Project"`). For a subdirectory report, co-locate the extension:
+`install.sh <project> <report-subdir>`.
 
 **`file not found ... assets/logo_trim.png`**
-The `_extensions/probity/` directory is not a direct child of the project
-root, or was installed in the wrong location. Re-run `install.sh` from the
-correct project root.
+The Typst template loads its logo via `_extensions/probity/assets/...`, resolved
+relative to the **report's own directory**. A subdirectory report fails here even
+when the extension is installed at the project root, because there is no
+`_extensions/probity/` beside the report. Co-locate it:
+`install.sh <project> <report-subdir>` — or move the report to the project root.
 
 **`error: expected comma` or similar Typst parse errors**
 A front-matter field value contains characters that break the Typst
