@@ -1,0 +1,5 @@
+*.pdf
+# Quarto-generated Typst source (root level only)
+/*.typ
+build/pg*.png
+.quarto/
