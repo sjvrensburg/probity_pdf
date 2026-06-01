@@ -1,6 +1,6 @@
-title: Probity PDF Report
+title: Probity Data Analytics
 author: Probity Data Analytics
-version: 1.0.0
+version: 1.1.0
 quarto-required: ">=1.4.0"
 contributes:
   formats:
@@ -14,3 +14,20 @@ contributes:
       fig-align: left
       fig-cap-location: bottom
       tbl-cap-location: top
+    beamer:
+      pdf-engine: xelatex
+      aspectratio: 169
+      navigation: empty
+      section-titles: false
+      toc: false
+      number-sections: false
+      fontsize: 11pt
+      classoption: t
+      sansfont: Carlito
+      monofont: Liberation Mono
+      header-includes:
+        - '\usepackage{probity-beamer}'
+      format-resources:
+        - probity-beamer.sty
+        - assets/logo_white.png
+        - assets/logo_navy_small.png

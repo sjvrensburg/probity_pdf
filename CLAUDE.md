@@ -4,16 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-A Quarto format extension (`probity-typst`) that produces branded A4 PDFs for Probity Data Analytics. Authors write `.qmd` files with `format: probity-typst`; the extension supplies all chrome (cover page, header, footer, headings, tables, blockquotes). Output is PDF via Typst — no LaTeX required.
+A Quarto format extension providing two branded PDF formats for Probity Data Analytics:
+
+- **`probity-typst`** — A4 report (cover page, TOC, running header/footer). Output via Typst — no LaTeX required.
+- **`probity-beamer`** — 16:9 slide deck (navy/gold, Carlito). Output via XeLaTeX/Beamer. Design aligned with the GRAP104 PowerPoint master.
 
 ## Key commands
 
 ```bash
-# Render the starter template (smoke-test the extension)
+# Render the report starter template
 quarto render template.qmd
+
+# Render the slide deck starter template
+quarto render template-slides.qmd
 
 # Visual check — convert PDF to images and inspect
 pdftoppm -png -r 90 template.pdf build/pg
+pdftoppm -png -r 144 template-slides.pdf build/slides-pg
 
 # Install the extension into another project
 ./install.sh /path/to/target/project
@@ -23,9 +30,31 @@ pdftoppm -png -r 90 template.pdf build/pg
 
 The extension is a Quarto **format extension** in `_extensions/probity/`.
 
-- `_extension.yml` — registers `probity-typst` as a Typst-based format with default options (TOC depth 3, fig/tbl caption locations).
-- `typst-template.typ` — pure Typst file defining `probity-report(...)`, the template function. Contains all brand constants (colours, fonts), page geometry, running header/footer, title page layout, and show rules for headings, tables, blockquotes, and code.
-- `typst-show.typ` — Pandoc template partial (uses `$...$` variable syntax). Quarto substitutes front-matter values here and generates the `#show: doc => probity-report(...)` call that wraps the document body.
+### Report format (`probity-typst`)
+
+- `_extension.yml` — registers both formats; `typst:` section sets TOC depth, caption locations.
+- `typst-template.typ` — pure Typst file defining `probity-report(...)`. Contains brand constants, page geometry, running header/footer, title page, and show rules.
+- `typst-show.typ` — Pandoc partial wiring front-matter into `probity-report(...)`.
+
+### Slide format (`probity-beamer`)
+
+- `_extension.yml` — `beamer:` section: xelatex, 16:9, Carlito via `sansfont:`, `format-resources` for asset delivery.
+- `probity-beamer.sty` — complete Beamer theme. Do NOT call `\setsansfont` here (Quarto handles it via `font-settings.latex`).
+- Assets (`logo_white.png`, `logo_navy_small.png`) are copied by `format-resources` to the document directory at render time — reference by basename only in the `.sty`.
+
+**Slide layout (aligned with GRAP104 PPTX master):**
+- Content slides: white background, running `logo_navy_small` + `#D5DEE9` hairline rule at top, 18pt bold navy title text — **no coloured title bar**.
+- Navy slides (title page, section dividers): full `#0A325A` background, 2.2mm gold vertical bar at left edge, left-aligned title at 32% from top, short gold rule at 73%, subtitle in gold `#C8881F`.
+
+**Section divider slides** use `{.plain}` on the `##` heading (suppresses headline/footline via Beamer) with `\ProbSectionContent{title}{subtitle}` in a raw LaTeX block:
+```markdown
+## {.plain}
+
+```{=latex}
+\ProbSectionContent{Part One: Findings}{}
+\ProbSectionContent{Part Two: Method}{How we built it}
+```
+```
 
 **Rendering pipeline:** Quarto converts `.qmd` → Pandoc → `<file>.typ` (with the template inlined) → Typst compiler → `<file>.pdf`. The template contents are inlined verbatim into the generated `.typ` at the project root, so all image paths in `typst-template.typ` must be relative to the project root (i.e. `_extensions/probity/assets/logo_trim.png`, not `assets/logo_trim.png`).
 

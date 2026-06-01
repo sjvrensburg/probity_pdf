@@ -68,7 +68,7 @@ TARGET="$(cd "${TARGET}" && pwd)"   # absolute, normalised
 TARGET_EXT="${TARGET}/_extensions/probity"
 
 # ---- install ----
-echo "Installing probity-typst extension into: ${TARGET}"
+echo "Installing probity extension into: ${TARGET}"
 
 if [ -d "${TARGET_EXT}" ]; then
     echo "  Removing previous installation..."
@@ -138,8 +138,10 @@ required_files=(
     "_extension.yml"
     "typst-template.typ"
     "typst-show.typ"
+    "probity-beamer.sty"
     "assets/logo_trim.png"
     "assets/logo_navy_small.png"
+    "assets/logo_white.png"
 )
 for f in "${required_files[@]}"; do
     if [ ! -f "${TARGET_EXT}/${f}" ]; then
@@ -156,19 +158,24 @@ else
 fi
 
 echo ""
-echo "Done. Add the following to your .qmd front matter:"
+echo "Done. Two formats are now available."
+echo ""
+echo "PDF report (via Typst — no LaTeX required):"
 echo ""
 echo "    format: probity-typst"
 echo "    lang: en-GB"
 echo ""
-echo "Render with:"
+echo "Slide deck (via XeLaTeX/Beamer — requires a TeX distribution):"
 echo ""
-echo "    quarto render my-report.qmd"
+echo "    format: probity-beamer"
+echo "    lang: en-GB"
 echo ""
-echo "Output is a PDF via Typst (no LaTeX required)."
+echo "Render with:  quarto render my-document.qmd"
 echo ""
-echo "Keep the report at or below the directory holding _quarto.yml and _extensions/."
-echo "If a report in a subdirectory reports \"Unable to read the extension\" or"
-echo "\"file not found ... assets/logo_trim.png\", re-run this script with the"
-echo "subdirectory as the second argument, e.g.:"
+echo "If Beamer is not installed, Quarto will attempt to install it automatically"
+echo "via TinyTeX. To install it manually: tlmgr install beamer"
+echo ""
+echo "Keep documents at or below the directory holding _quarto.yml and _extensions/."
+echo "If a document in a subdirectory reports \"Unable to read the extension\" or"
+echo "asset errors, re-run this script with the subdirectory as the second argument:"
 echo "    bash install.sh ${TARGET} pipeline/docs"

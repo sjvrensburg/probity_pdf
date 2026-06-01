@@ -1,0 +1,230 @@
+% probity-beamer.sty — Probity Data Analytics Beamer Theme
+% Aligned with the GRAP104 PowerPoint master layout.
+%
+% Content slides: white background, running logo + hairline rule at top,
+%   navy title text — no coloured title bar.
+% Navy slides (title page, section dividers): full navy background,
+%   2.2 mm gold vertical bar at left edge, left-aligned title and subtitle.
+%
+% Fonts are set via Quarto's sansfont/monofont format options; do NOT call
+% \setsansfont here — Quarto's font-settings.latex partial handles it.
+%
+% Logo assets are copied to the document directory by format-resources;
+% reference by basename only.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{probity-beamer}[2025/06/01 Probity Beamer Theme]
+
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\RequirePackage{graphicx}
+
+% ── Colour palette ───────────────────────────────────────────────────────────
+\definecolor{probitynavy}{HTML}{0A325A}
+\definecolor{probitydeepnavy}{HTML}{062340}
+\definecolor{probitymidblue}{HTML}{4A7BA8}
+\definecolor{probitylight}{HTML}{8BABCB}
+\definecolor{probitygold}{HTML}{C8881F}
+\definecolor{probitypaletint}{HTML}{E8EEF5}
+\definecolor{probitybody}{HTML}{1F2937}
+\definecolor{probitymuted}{HTML}{6B7280}
+\definecolor{probityrule}{HTML}{D5DEE9}
+
+% ── Base theme reset ─────────────────────────────────────────────────────────
+\usetheme{default}
+\usecolortheme{default}
+\usefonttheme{default}       % \sffamily throughout; Carlito via sansfont: in _extension.yml
+\useinnertheme{default}
+\setbeamertemplate{navigation symbols}{}
+
+% ── Colour assignments ───────────────────────────────────────────────────────
+\setbeamercolor{normal text}{fg=probitybody,bg=white}
+\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{frametitle}{fg=probitynavy,bg=white}
+\setbeamercolor{structure}{fg=probitynavy}
+\setbeamercolor{alerted text}{fg=probitygold}
+\setbeamercolor{footline}{fg=probitymuted,bg=white}
+\setbeamercolor{block title}{fg=white,bg=probitynavy}
+\setbeamercolor{block body}{fg=probitybody,bg=probitypaletint}
+\setbeamercolor{block title alerted}{fg=white,bg=probitygold}
+\setbeamercolor{block body alerted}{fg=probitybody,bg=probitypaletint}
+\setbeamercolor{block title example}{fg=white,bg=probitymidblue}
+\setbeamercolor{block body example}{fg=probitybody,bg=probitypaletint}
+\setbeamercolor{itemize item}{fg=probitynavy}
+\setbeamercolor{itemize subitem}{fg=probitymidblue}
+\setbeamercolor{itemize subsubitem}{fg=probitymidblue}
+\setbeamercolor{enumerate item}{fg=probitynavy}
+\setbeamercolor{enumerate subitem}{fg=probitymidblue}
+\setbeamercolor{section in toc}{fg=probitybody}
+\setbeamercolor{subsection in toc}{fg=probitymuted}
+
+% ── Font assignments ─────────────────────────────────────────────────────────
+\setbeamerfont{frametitle}{series=\bfseries}
+\setbeamerfont{footline}{size=\tiny}
+\setbeamerfont{block title}{size=\normalsize,series=\bfseries}
+\setbeamerfont{section in toc}{size=\normalsize,series=\mdseries}
+
+% ── Item and enumerate templates ─────────────────────────────────────────────
+\setbeamertemplate{itemize item}{%
+  \raisebox{0.45ex}{\scriptsize\color{probitynavy}\textbullet}}
+\setbeamertemplate{itemize subitem}{%
+  \raisebox{0.45ex}{\scriptsize\color{probitymidblue}{--}}}
+\setbeamertemplate{itemize subsubitem}{%
+  \raisebox{0.45ex}{\tiny\color{probitymidblue}\textbullet}}
+\setbeamertemplate{enumerate item}{%
+  {\color{probitynavy}\insertenumlabel.}}
+\setbeamertemplate{enumerate subitem}{%
+  {\color{probitymidblue}\insertenumlabel.}}
+
+% ── Block styling ─────────────────────────────────────────────────────────────
+\setbeamertemplate{blocks}[default]
+
+% ── Margins ───────────────────────────────────────────────────────────────────
+% 6 mm matches the PPTX master left margin (1.27 cm × 47% scale).
+\setbeamersize{text margin left=6mm,text margin right=6mm}
+
+% ── Headline — frame title above the top hairline ────────────────────────────
+% The title is rendered here (above the hairline) rather than in the frametitle
+% template. The frametitle template is set to empty below.
+%
+% Constant ht/dp keeps Beamer's layout engine from measuring 0pt on frame 1
+% (where \insertframetitle is empty) and applying that 0pt to every frame.
+% Content is suppressed on frame 1 with \ifnum\insertframenumber>1\relax;
+% the TikZ navy fill covers the empty box on the title slide anyway.
+% [plain] frames (section dividers) suppress the headline via Beamer.
+%
+%   vspace above title  = 4 pt
+%   title font          = 18 pt / 22 pt leading
+%   → ht = 28 pt   dp = 6 pt   total headline ≈ 12 mm
+%   hairline immediately below the headline box
+%
+\setbeamertemplate{headline}{%
+  \begin{beamercolorbox}[
+    wd=\paperwidth,ht=42pt,dp=2pt,leftskip=6mm,rightskip=6mm
+  ]{frametitle}%
+    \ifnum\insertframenumber>1\relax
+      \vspace*{\fill}%
+      {\fontsize{18}{22}\fontseries{b}\selectfont\color{probitynavy}%
+        \insertframetitle}%
+      \hfill
+      \raisebox{-5.5pt}{\includegraphics[height=18pt]{logo_navy_small}}\par
+      \ifx\insertframesubtitle\empty\else
+        {\fontsize{9}{11}\selectfont\color{probitymidblue}%
+          \insertframesubtitle}\par
+      \fi
+      \vspace*{\fill}%
+    \fi
+  \end{beamercolorbox}%
+  \ifnum\insertframenumber>1\relax
+    {\color{probityrule}\rule{\paperwidth}{0.4pt}}%
+  \fi
+}
+
+% ── Frametitle — empty; title is rendered in the headline above ───────────────
+\setbeamertemplate{frametitle}{}
+
+% ── Footline — page number bottom-right, no hairline ─────────────────────────
+\setbeamertemplate{footline}{%
+  \ifnum\insertframenumber>1\relax
+    \begin{beamercolorbox}[
+      wd=\paperwidth,ht=5pt,dp=10pt,rightskip=6mm
+    ]{footline}%
+      \usebeamerfont{footline}%
+      \hfill
+      \textcolor{probitymuted}{\insertframenumber}%
+    \end{beamercolorbox}%
+  \fi
+}
+
+% ── Title page ────────────────────────────────────────────────────────────────
+% Matches the PPTX "Title Slide" master layout:
+%   - Full navy background
+%   - 2.2 mm gold vertical bar at left edge (PPTX: 0.46 cm × 47%)
+%   - White logo top-left, inset from bar
+%   - Title left-aligned at 32% from top (PPTX y=6.1 cm / 19.05 cm)
+%   - Subtitle in gold at 55% from top
+%   - Short gold rule at 73% from top (PPTX y=13.97 cm / 19.05 cm)
+%   - Author + date in light blue at 82% from top
+\setbeamertemplate{title page}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    % Navy background
+    \fill[probitynavy]
+      (current page.south west) rectangle (current page.north east);
+    % Gold vertical accent bar — 2.2 mm wide, full height
+    \fill[probitygold]
+      (current page.south west)
+      rectangle ([xshift=2.2mm]current page.north west);
+    % White logo — top-left, inset 6 mm from bar
+    \node[anchor=north west,inner sep=0pt]
+      at ([xshift=6mm,yshift=-12mm]current page.north west)
+      {\includegraphics[width=0.25\paperwidth]{logo_white}};
+    % Title — left-aligned, 32 % from top
+    \node[anchor=north west,text width=0.88\paperwidth,align=left]
+      at ([xshift=6mm,yshift=-0.32\paperheight]current page.north west)
+      {{\fontseries{b}\fontsize{24}{28}\selectfont\color{white}\inserttitle}};
+    % Subtitle — left-aligned, 55 % from top, gold
+    \ifx\insertsubtitle\empty\else
+      \node[anchor=north west,text width=0.88\paperwidth,align=left]
+        at ([xshift=6mm,yshift=-0.55\paperheight]current page.north west)
+        {\fontsize{11}{14}\selectfont\color{probitygold}\insertsubtitle};
+    \fi
+    % Short gold horizontal rule — 73 % from top, left-anchored, 26 mm wide
+    \draw[probitygold,line width=1pt]
+      ([xshift=6mm,yshift=-0.73\paperheight]current page.north west)
+      -- ([xshift=32mm,yshift=-0.73\paperheight]current page.north west);
+    % Author + date — 82 % from top, light blue
+    \node[anchor=north west,text width=0.88\paperwidth,align=left]
+      at ([xshift=6mm,yshift=-0.82\paperheight]current page.north west)
+      {\fontsize{9}{11}\selectfont\color{probitylight}%
+        \insertauthor%
+        \ifx\insertdate\empty\else
+          {\color{probityrule}\ \textbar\ }\insertdate%
+        \fi};
+  \end{tikzpicture}%
+}
+
+% ── Section divider slide ─────────────────────────────────────────────────────
+% Matches the PPTX "Section Header" layout:
+%   - Full navy background with 2.2 mm gold vertical bar
+%   - Title left-aligned at 32 % from top, bold white
+%   - Short gold rule below the title
+%   - Optional label below rule in gold
+%
+% Usage in a .qmd:
+%
+%   ## {.plain}
+%
+%   ```{=latex}
+%   \ProbSectionContent{Part One: Findings}{}
+%   \ProbSectionContent{Part Two: Method}{How we built the model}
+%   ```
+%
+% {.plain} on the heading suppresses the headline, frametitle, and footline,
+% leaving the TikZ content as the only visible output.
+%
+\newcommand{\ProbSectionContent}[2]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    % Navy background
+    \fill[probitynavy]
+      (current page.south west) rectangle (current page.north east);
+    % Gold vertical accent bar
+    \fill[probitygold]
+      (current page.south west)
+      rectangle ([xshift=2.2mm]current page.north west);
+    % Section title — left-aligned, 32 % from top
+    \node[anchor=north west,text width=0.88\paperwidth,align=left]
+      at ([xshift=6mm,yshift=-0.32\paperheight]current page.north west)
+      {{\fontseries{b}\fontsize{26}{30}\selectfont\color{white}#1}};
+    % Short gold rule — 54 % from top
+    \draw[probitygold,line width=1pt]
+      ([xshift=6mm,yshift=-0.54\paperheight]current page.north west)
+      -- ([xshift=32mm,yshift=-0.54\paperheight]current page.north west);
+    % Optional label below rule — gold
+    \def\probtempsubtitle{#2}%
+    \ifx\probtempsubtitle\empty\else
+      \node[anchor=north west,text width=0.88\paperwidth,align=left]
+        at ([xshift=6mm,yshift=-0.57\paperheight]current page.north west)
+        {\fontsize{14}{17}\selectfont\color{probitygold}#2};
+    \fi
+  \end{tikzpicture}%
+}
