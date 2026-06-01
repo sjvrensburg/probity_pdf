@@ -38,7 +38,12 @@ Quarto 1.4 bundles Typst 0.10. The template must avoid:
 
 ## Extension discovery requirement
 
-Quarto walks up from the document to find `_extensions/`. When documents are in subdirectories, a `_quarto.yml` must exist at the project root, otherwise rendering fails with "Unable to read the extension 'probity'". `install.sh` creates a minimal one automatically.
+Quarto discovers `_extensions/` by walking up from the document only as far as the project root (the nearest ancestor with a `_quarto.yml`). A report in a subdirectory hits two distinct failures:
+
+1. **Discovery** — no root `_quarto.yml` (e.g. after `quarto add`), or an intermediate `_quarto.yml` that re-anchors the root below `_extensions/`, gives "Unable to read the extension 'probity'". `install.sh` creates a minimal root `_quarto.yml` automatically.
+2. **Logo path** — `typst-template.typ` loads its logo via the relative path `_extensions/probity/assets/...`, which Typst resolves against the *document's* directory. A subdirectory report therefore fails with "file not found ... assets/logo_trim.png" even when the extension is installed at the project root.
+
+Both are fixed by co-locating the extension with the report: `install.sh <project> <report-subdir>` copies `_extensions/probity/` next to the report (`--link` symlinks instead on Unix). Reports at the project root need none of this. See `README.md` → "Required directory structure".
 
 ## Brand reference
 

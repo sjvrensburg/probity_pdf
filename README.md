@@ -44,11 +44,17 @@ abstract: |
 ### Option A: install script (recommended)
 
 ```bash
-./install.sh /path/to/target/project
+./install.sh /path/to/target/project                 # report at the project root
+./install.sh /path/to/target/project pipeline/docs   # report in a subdirectory
 ```
 
 Copies `_extensions/probity/` into the target and creates a minimal
-`_quarto.yml` if one does not exist.
+`_quarto.yml` if one does not exist. If the report will live in a
+**subdirectory**, pass that subdirectory as a second argument — the script then
+also places the extension next to the report, which is required for a
+subdirectory report to render (see [Required directory
+structure](#required-directory-structure)). The default is a copy (portable,
+Windows-safe); `--link` makes a relative symlink instead on Unix.
 
 ### Option B: manual copy
 
@@ -60,27 +66,54 @@ Then set `format: probity-typst` in your document's front matter.
 
 ### Required directory structure
 
-Quarto walks up from the document to the project root to find
-`_extensions/`. For documents in subdirectories, two things are required:
-
-1. `_extensions/probity/` is a direct child of the project root.
-2. A `_quarto.yml` exists at the project root (even a minimal one).
+A report **at the project root** — beside `_extensions/` and `_quarto.yml` —
+renders with no special handling:
 
 ```
 my-project/
-  _quarto.yml              ← required: marks the project root
+  _quarto.yml              ← marks the project root
   _extensions/
     probity/
-      _extension.yml
-      typst-template.typ
-      typst-show.typ
-      assets/
-  pipeline/
-    docs/
-      report.qmd           ← format: probity-typst
+  report.qmd               ← format: probity-typst
 ```
 
-Minimal `_quarto.yml`:
+A report in a **subdirectory** is trickier, for two independent reasons:
+
+1. **Discovery.** Quarto finds `_extensions/` by walking up from the `.qmd` only
+   as far as the project root (the nearest ancestor with a `_quarto.yml`).
+   Without a root `_quarto.yml` — for example after `quarto add`, which does not
+   create one — or with an *intermediate* `_quarto.yml` that re-anchors the root
+   below `_extensions/`, the render fails with `Unable to read the extension`.
+2. **Logo path.** Even when discovery succeeds, the Typst template loads its logo
+   via the relative path `_extensions/probity/assets/...`, which Typst resolves
+   against the **report's own directory** — not the project root. So a report at
+   `pipeline/docs/report.qmd` looks for `pipeline/docs/_extensions/probity/assets/`
+   and fails with `file not found ... assets/logo_trim.png`, even with the
+   extension correctly installed at the project root.
+
+Because of (2), the reliable layout for a subdirectory report is to **co-locate
+the extension with the report**. The install script does this when you pass the
+report's subdirectory:
+
+```bash
+./install.sh my-project pipeline/docs
+```
+
+```
+my-project/
+  _quarto.yml
+  _extensions/
+    probity/                 ← project-root copy
+  pipeline/
+    docs/
+      _extensions/
+        probity/             ← co-located copy, next to the report
+      report.qmd             ← format: probity-typst
+```
+
+Use `--link` to symlink the co-located copy back to the project-root one instead
+of duplicating it (Unix filesystems only; the script falls back to a copy if a
+working symlink cannot be created). Minimal `_quarto.yml`:
 
 ```yaml
 project:
@@ -93,16 +126,27 @@ The install script creates this automatically if it is missing.
 
 ### `Unable to read the extension 'probity'`
 
-Missing `_quarto.yml` at the project root. See the directory structure
-above. The install script creates one; if you copied the extension
-manually, create it yourself.
+Quarto could not discover `_extensions/` while walking up from the report to
+the project root. Usual causes: no `_quarto.yml` at the project root (e.g. after
+`quarto add`), or an intermediate `_quarto.yml` in a subdirectory that
+re-anchors the root below `_extensions/`. For a report at the project root,
+ensure a root `_quarto.yml` exists. For a report in a subdirectory, co-locate
+the extension with it: `./install.sh <project> <report-subdir>` (see [Required
+directory structure](#required-directory-structure)).
 
 ### `file not found ... assets/logo_trim.png`
 
-The `_extensions/probity/` directory is not a direct child of the project
-root. The Typst compiler resolves image paths relative to the project root,
-so the extension must live at `<root>/_extensions/probity/`. Re-run
-`install.sh` from the correct root.
+The Typst template loads its logo via `_extensions/probity/assets/...`, a path
+resolved relative to the **report's own directory**. The error means there is no
+`_extensions/probity/` *next to the report* — which is always the case for a
+report in a subdirectory, even when the extension is installed correctly at the
+project root. Co-locate the extension with the report:
+
+```bash
+./install.sh <project> <report-subdir>     # e.g. ./install.sh . pipeline/docs
+```
+
+Or move the report up to the project root, beside `_extensions/`.
 
 ### Font not found (Calibri)
 
