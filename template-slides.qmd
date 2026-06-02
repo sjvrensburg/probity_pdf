@@ -1,132 +1,104 @@
 ---
-title: "Presentation Title"
-subtitle: "A short descriptive subtitle"
-author: "Author Name, Role"
+title: "Forward-looking α"
+subtitle: "GRAP 104 provisioning model"
+author: "Probity Data Analytics"
 date: today
-format: probity-beamer
-lang: en-GB
+format: probity-slides-typst
+footer-text: "GRAP 104 forward-looking α"
 ---
 
 ## Agenda
 
 - Key finding and executive summary
 - Analysis and supporting evidence
-- Scenario comparison
-- Recommendations
+- Scenario comparison and recommendations
 
-## {.plain}
-
-```{=latex}
-\ProbSectionContent{Part One}{Key Finding}
+```{=typst}
+#prob-section("Part One", subtitle: "The Model")
 ```
 
-## Revenue Exceeds the Baseline Forecast by 18%
-
-Lead with the answer. The financial services recovery in Q2 drove outperformance
-across all three modelled scenarios.
-
-- **Revenue:** R 14.9M vs R 12.6M baseline forecast
-- **Variance:** +R 2.3M (+18.3% above baseline)
-- **Driver:** Q2 recovery in financial services; lag-1 GDP effect materialised
-  in Q3 as anticipated
-
-The result holds across the conservative scenario but does not extend to the
-stress scenario.
-
-## Contributing Factors
-
-:::: {.columns}
-
-::: {.column width="48%"}
-**Positive drivers**
-
-- Financial services sector recovery
-- Lag-1 GDP effect, as modelled
-- Lower-than-expected client attrition
-- Favourable exchange rate in Q2
-:::
-
-::: {.column width="48%"}
-**Risk factors to monitor**
-
-- Elevated exposure to three anchor clients
-- Regulatory change in Q4 pipeline
-- Margin pressure from cost inflation
-- Portfolio concentration in one sector
-:::
-
-::::
-
-## {.plain}
-
-```{=latex}
-\ProbSectionContent{Part Two}{Scenario Analysis}
+```{=typst}
+#prob-navy-slide("The model", subtitle: "A linear regression on four post-COVID fiscal years, with the inflation-growth gap lagged one year.")[
+  #prob-equation-box[Loss Rate#sub[t] = β#sub[0] + β#sub[1] · (Inflation-Growth Gap)#sub[t−1] + ε]
+  #v(0.5cm)
+  #prob-metric-cards((
+    (label: "Intercept",       value: [β#sub[0] = +0.0861],  desc: [Baseline loss rate when the inflation-growth gap is zero.]),
+    (label: "Macro slope",     value: [β#sub[1] = +0.00862], desc: [Positive sign matches theory. Stress up, losses up.]),
+    (label: "Goodness of fit", value: [R#super[2] = 0.97],   desc: [Post-COVID fit (n = 4); the COVID year is excluded.]),
+  ))
+]
 ```
 
-## Scenario Results
+## Computing α Each Year
 
-All three scenarios outperform the prior-year actuals. The optimistic scenario
-requires the Q4 pipeline to close at a conversion rate above the trailing
-twelve-month average.
+At year-end, read the two macro series for the year just ended; apply the formula; multiply every matrix cell by α.
 
-| Scenario      | Assumption                  | Revenue (R M) |
-|:--------------|:----------------------------|---------------:|
-| Baseline      | Current trend continues     |          14.9 |
-| Conservative  | Q4 pipeline at 60% close    |          12.4 |
-| Optimistic    | Q4 pipeline at 90% close    |          17.1 |
-| Prior year    | Actual FY2025               |          11.8 |
-
-: Provision under each scenario {#tbl-scenarios}
-
-## Model Specification
-
-The forecast uses an autoregressive model with a one-period GDP lag. The
-specification was selected via AIC on a rolling 24-month training window.
-
-```python
-import statsmodels.api as sm
-
-model = sm.tsa.ARIMA(
-    endog=revenue,
-    exog=gdp_lag1,
-    order=(1, 0, 0),
+```{=typst}
+#prob-cols(
+  prob-steps((
+    (title: [Read the macros], body: [SARB real-GDP growth (KBP6006C) and Stats SA headline CPI YoY (CPI60001), for the fiscal year just ended.]),
+    (title: [Form the inflation-growth gap], body: [ig_gap is the simple subtraction: how far inflation ran ahead of growth.]),
+    (title: [Compute α], body: [Apply the published coefficients, scale to the mean loss rate, then the neutral band and clip.]),
+    (title: [Apply to the matrix], body: [Multiply every cell of the provision matrix by α. Structure unchanged; only scaled.]),
+  )),
+  prob-formula-card(
+    (
+      ([ig_gap],         [cpi_yoy − gdp_growth]),
+      ([predicted_loss], [0.0861 + 0.00862 × ig_gap]),
+      ([α_raw],          [predicted_loss / 0.1215]),
+      ([α],              [MIN(1.45, MAX(0.85, α_raw))]),
+    ),
+    label: "The Formula",
+    note: [Excel-style; substitute the names for last year's values.],
+    footnote: [Constants · 0.0861 = β₀ · 0.00862 = β₁ · 0.1215 = mean loss rate · [0.85, 1.45] = clip],
+    height: 7.7cm,
+  ),
+  ratio: (1fr, 1.1fr),
 )
-result = model.fit()
-print(result.summary())
 ```
 
-## {.plain}
+## How α Responds Across Scenarios
 
-```{=latex}
-\ProbSectionContent{Part Three}{Recommendations}
+Four illustrative macro states. The neutral band holds α at 1 around the baseline; the clip stops it running away in either direction.
+
+```{=typst}
+#prob-scenario-cards((
+  (accent: probity-green,    label: "Strong Growth", meta: [GDP +3 % · CPI 3 % · gap 0],  value: [α = 0.85], desc: [Below the neutral band; α held at its 0.85 floor.]),
+  (accent: probity-mid-blue, label: "Steady",        meta: [GDP +1 % · CPI 5 % · gap 4],  value: [α = 1.00], desc: [Inside the neutral band; matrix is left unchanged.]),
+  (accent: probity-gold,     label: "Downturn",      meta: [GDP −1 % · CPI 7 % · gap 8],  value: [α = 1.28], desc: [Stagflation. Matrix lifted by about 28 %.]),
+  (accent: probity-red,      label: "Severe Stress", meta: [GDP −3 % · CPI 10 % · gap 13],value: [α = 1.45], desc: [Above the band; α held at its 1.45 cap.]),
+))
 ```
 
-## Recommendations
+## Worked Example: FY 2024/25
 
-Act on the three items below before the end of Q4 to lock in the optimistic
-scenario outcome.
-
-1. **Pursue the top-5 pipeline accounts** before the regulatory window closes
-   in November. Target conversion: 85%.
-
-2. **Reduce anchor-client concentration** to below 40% of portfolio revenue
-   within two quarters. Begin cross-sell outreach immediately.
-
-3. **Re-run the model monthly** through Q1 2027 as the GDP series revises.
-   Flag any revision exceeding 1.5% to the steering committee.
-
-## Closing
-
-\vspace{1.2cm}
-
-\begin{center}
-{\large\color{probitynavy}\textbf{Thank you}}
-
-\vspace{0.4cm}
-
-{\normalsize\color{probitymuted}Questions and discussion}
-
-\vspace{1.4cm}
-
-{\small\color{probitymuted}Probity Data Analytics\quad\textbar\quad Confidential}
-\end{center}
+```{=typst}
+#prob-cols(
+  table(
+    columns: (auto, 1fr, auto),
+    align: (center + horizon, left + horizon, right + horizon),
+    stroke: none,
+    fill: (_, row) => if row == 0 { probity-navy } else if calc.odd(row) { probity-pale-tint } else { white },
+    inset: (x: 9pt, y: 7pt),
+    table.header(
+      text(fill: white, weight: "bold")[Step],
+      text(fill: white, weight: "bold")[Quantity],
+      text(fill: white, weight: "bold")[Value],
+    ),
+    [1], [FY24/25 real-GDP growth], [+0.70 %],
+    [1], [FY24/25 CPI YoY],         [+3.23 %],
+    [2], [ig_gap = 3.23 − 0.70],    [+2.53],
+    [3], [predicted_loss],          [10.79 %],
+    [3], [α_raw = 10.79 / 12.15],   [0.888],
+    [4], text(fill: probity-gold, weight: "bold")[Apply to matrix], text(fill: probity-gold, weight: "bold")[× 0.89],
+  ),
+  prob-result-card(
+    [α = 0.89],
+    label: "Result",
+    desc: [Inflation eased while growth stayed weak, so the gap sat below baseline.],
+    footnote: [The matrix scales down by about 11 %.],
+    height: 7.7cm,
+  ),
+  ratio: (1.35fr, 1fr),
+)
+```

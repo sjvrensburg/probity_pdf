@@ -1,13 +1,17 @@
 # Probity Data Analytics — Quarto PDF templates
 
-A Quarto format extension providing two branded PDF output formats for
-Probity Data Analytics: navy/gold palette, Calibri type, and Probity
-visual identity.
+Branded Quarto formats for Probity Data Analytics: navy/gold palette,
+Calibri type, and Probity visual identity.
 
 | Format | Output | Engine | Use for |
 |---|---|---|---|
 | `probity-typst` | A4 report | Typst (no LaTeX) | Written reports, methodology, deliverables |
-| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Client presentations, slide decks |
+| `probity-slides-typst` | 16:9 slides | Typst (no LaTeX) | Client presentations, slide decks |
+| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Legacy — superseded by `probity-slides-typst` |
+
+The slide deck ships a card-component library (scenario cards, numbered
+steps, formula / result cards, metric rows, equation boxes) — see
+[Authoring slides](#authoring-slides).
 
 ## Quick start
 
@@ -48,25 +52,30 @@ title: "Presentation Title"
 subtitle: "A short descriptive subtitle"
 author: "Author Name, Role"
 date: today
-format: probity-beamer
+format: probity-slides-typst
+footer-text: "Optional centre-footer running title"
 lang: en-GB
 ---
 ```
+
+> The format name is `probity-slides-typst` (the short `probity-slides`
+> does not resolve). The legacy Beamer deck is still available as
+> `format: probity-beamer` (starter `template-beamer.qmd`).
 
 ## What's here
 
 | Path | Purpose |
 |---|---|
-| `_extensions/probity/` | The Quarto format extension |
-| `_extensions/probity/_extension.yml` | Format definitions (`probity-typst`, `probity-beamer`) |
+| `_extensions/probity/` | Report + legacy Beamer extension |
 | `_extensions/probity/typst-template.typ` | Typst template function (report) |
-| `_extensions/probity/typst-show.typ` | Pandoc partial wiring front matter (report) |
-| `_extensions/probity/probity-beamer.sty` | Beamer theme (slides) |
-| `_extensions/probity/assets/` | Probity logo files |
+| `_extensions/probity/probity-beamer.sty` | Legacy Beamer theme |
+| `_extensions/probity-slides/` | Typst slide-deck extension |
+| `_extensions/probity-slides/typst-template.typ` | Slide template + card-component library |
 | `template.qmd` | Starter report document |
-| `template-slides.qmd` | Starter slide deck |
+| `template-slides.qmd` | Starter slide deck (Typst) |
+| `template-beamer.qmd` | Starter slide deck (legacy Beamer) |
 | `SKILL.md` | Full guide: usage, brand rules, writing voice |
-| `install.sh` | Installs the extension into another project |
+| `install.sh` | Installs the report extension into another project |
 
 ## Using it in another project
 
@@ -195,41 +204,107 @@ helper, pass `fill: none` yourself for the same reason.
 
 ## Authoring slides
 
-### Slide sections
+The Typst deck (`probity-slides-typst`) has **two authoring modes**:
 
-Use a `## {.plain}` heading followed by a raw LaTeX block to insert a
-full-navy section divider slide:
+1. **Plain slides** — a `## Heading` starts a new white content slide; write
+   normal Markdown (bullets, text, `###` subtitle) beneath it.
+2. **Card / navy slides** — call a helper from a raw ` ```{=typst} ` block.
+   The brand colours (`probity-navy`, `probity-gold`, `probity-green`, …) and
+   all helpers are in scope inside these blocks.
 
-```markdown
-## {.plain}
+Title slide, author and the centre-footer come from the YAML front matter
+(`title`, `subtitle`, `author`, `date`, `footer-text`).
 
-```{=latex}
-\ProbSectionContent{Part One: Findings}{}
-\ProbSectionContent{Part Two: Method}{How we built it}
+> **Keep one slide to one page.** There is no auto-fit: content that is taller
+> than the body silently spills onto the next page. Every card helper takes a
+> `height:` parameter and ships with defaults sized to fit; trim text or lower
+> the height if a slide overflows.
+
+### Section divider (full navy)
+
+```{=typst}
+#prob-section("Part One", subtitle: "The Model")
 ```
+
+### Navy content slide
+
+A full-navy slide that still carries the logo, hairline and title — host for
+equation boxes and metric cards:
+
+```{=typst}
+#prob-navy-slide("The model", subtitle: "A linear regression …")[
+  #prob-equation-box[Loss Rate#sub[t] = β#sub[0] + β#sub[1] · (Gap)#sub[t−1] + ε]
+  #v(0.5cm)
+  #prob-metric-cards((
+    (label: "Intercept",   value: [β#sub[0] = +0.0861],  desc: [Baseline loss rate.]),
+    (label: "Macro slope", value: [β#sub[1] = +0.00862], desc: [Stress up, losses up.]),
+    (label: "Fit",         value: [R#super[2] = 0.97],   desc: [Post-COVID, n = 4.]),
+  ))
+]
 ```
 
-The first argument is the section title; the second is an optional subtitle
-(leave empty `{}` to omit). The `{.plain}` attribute suppresses the running
-header and footer so the TikZ navy background fills the entire slide.
+### Scenario cards (white slide)
 
-### Closing slide
+A row of equal-height cards, each with a coloured accent bar:
 
-Use a plain `## Closing` heading and add raw LaTeX for the centred content:
-
-```markdown
-## Closing
-
-\vspace{1.2cm}
-
-\begin{center}
-{\large\color{probitynavy}\textbf{Thank you}}
-
-\vspace{0.4cm}
-
-{\normalsize\color{probitymuted}Questions and discussion}
-\end{center}
+```{=typst}
+#prob-scenario-cards((
+  (accent: probity-green,    label: "Strong Growth", meta: [GDP +3 % · gap 0],  value: [α = 0.85], desc: [Held at the 0.85 floor.]),
+  (accent: probity-mid-blue, label: "Steady",        meta: [GDP +1 % · gap 4],  value: [α = 1.00], desc: [Matrix unchanged.]),
+  (accent: probity-gold,     label: "Downturn",      meta: [GDP −1 % · gap 8],  value: [α = 1.28], desc: [Matrix lifted ~28 %.]),
+  (accent: probity-red,      label: "Severe Stress", meta: [GDP −3 % · gap 13], value: [α = 1.45], desc: [Held at the 1.45 cap.]),
+))
 ```
+
+### Numbered steps + formula card (two columns)
+
+`prob-cols(left, right, ratio:)` lays out two columns (Quarto's `::: {.columns}`
+does **not** work in Typst output). `prob-formula-card` aligns `name = expr`
+mono lines:
+
+```{=typst}
+#prob-cols(
+  prob-steps((
+    (title: [Read the macros], body: [SARB GDP growth and Stats SA CPI YoY.]),
+    (title: [Form the gap],    body: [ig_gap is the simple subtraction.]),
+  )),
+  prob-formula-card(
+    (
+      ([ig_gap],         [cpi_yoy − gdp_growth]),
+      ([predicted_loss], [0.0861 + 0.00862 × ig_gap]),
+    ),
+    note: [Excel-style; substitute last year's values.],
+    footnote: [0.0861 = β₀ · 0.00862 = β₁],
+    height: 7.7cm,
+  ),
+  ratio: (1fr, 1.1fr),
+)
+```
+
+### Result card
+
+```{=typst}
+#prob-result-card(
+  [α = 0.89],
+  label: "Result",
+  desc: [Inflation eased while growth stayed weak.],
+  footnote: [The matrix scales down by about 11 %.],
+  height: 7.7cm,
+)
+```
+
+The full set of helpers — `prob-section`, `prob-navy-slide`,
+`prob-scenario-cards`, `prob-metric-cards`, `prob-steps`, `prob-formula-card`,
+`prob-result-card`, `prob-equation-box`, `prob-cols` — is defined and commented
+in `_extensions/probity-slides/typst-template.typ`. `template-slides.qmd` shows
+every one in context.
+
+### Legacy Beamer deck
+
+The previous XeLaTeX/Beamer theme is still available as `format: probity-beamer`
+(starter `template-beamer.qmd`); its section dividers use
+`## {.plain}` + `\ProbSectionContent{title}{subtitle}`. Prefer the Typst deck
+for new work.
 
 ## Troubleshooting
 
