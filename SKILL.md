@@ -143,8 +143,12 @@ The legacy XeLaTeX deck is still available as `format: probity-beamer`
 
 **Slide authoring — two modes:**
 
-1. **Plain slides** — a `## Heading` starts a new white content slide; write
-   normal Markdown beneath it (bullets, numbered lists, text, `###` subtitle).
+1. **Plain slides** — a `## Heading` starts a new white content slide (frame
+   title left, logo right, above a hairline — matching Beamer); write normal
+   Markdown beneath it (bullets, numbered lists, text, `###` subtitle). Use
+   `##` for every slide; do **not** add a `#` (level-1) heading — Quarto
+   normalises the shallowest level to Typst level 1 and a stray `#` shifts it,
+   breaking the frame-title styling.
 2. **Card / navy slides** — call a helper from a raw ` ```{=typst} ` block.
    Brand colours (`probity-navy`, `probity-gold`, `probity-green`,
    `probity-mid-blue`, `probity-red`) and the helpers are in scope there.

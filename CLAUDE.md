@@ -46,8 +46,8 @@ Dependency-free, **page-based** Typst slides (no Touying/polylux). Lives in `_ex
 
 - `_extension.yml` — registers a `typst` format (`presentation-16-9`). Referenced as `format: probity-slides-typst` (the short `probity-slides` does **not** resolve).
 - `typst-template.typ` — defines `probity-slides(...)` plus the slide/card helpers. Mechanism:
-  - `set page(paper: "presentation-16-9", header:, footer:)` draws the running logo + hairline header and page-number footer on every content slide (suppressed on page 1, the title slide).
-  - `show heading.where(level: 2): it => { pagebreak(weak: true); <navy title> }` — **each `##` starts a new white content slide**. `###` becomes a subtitle line.
+  - `set page(paper: "presentation-16-9", footer:)` draws the page-number footer on every content slide (suppressed on page 1, the title slide). Top margin is small (~0.85 cm) so the frame title sits near the top edge like Beamer.
+  - `show heading.where(level: 1): it => { pagebreak(weak: true); <frame title left + logo right + hairline> }` — **each `##` starts a new white content slide**, with the frame title and logo above a hairline (matching the Beamer headline). **Note the level:** Quarto normalises the deck's shallowest heading (`##`) to Typst **level 1**, so the rule targets level 1, and `###` (Typst level 2) is the subtitle. Author convention: use `##` for every slide; introducing a `#` shifts the normalisation and breaks the rules.
   - Full-bleed navy slides (title, section dividers, navy content) are produced by `#page(fill: navy, margin: 0pt, header: none, footer: none)` inside the `_navy-canvas` helper — a `page()` call mid-document yields isolated pages with their own chrome, and the page counter keeps incrementing so footers stay correct.
 - `typst-show.typ` — wires front matter (`title`, `subtitle`, `authors`, `date`, `footer-text`) into `probity-slides(...)`.
 - `assets/` — own copy of the logos; referenced as `_extensions/probity-slides/assets/...` (resolved against the document dir, like the report).

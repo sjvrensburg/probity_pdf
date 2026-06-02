@@ -27,14 +27,14 @@
 // ── Full-bleed navy canvas (title / section / navy content slides) ─────────────
 // margin 0 so the gold edge bar and background reach the page edges; inner
 // padding is applied to `body`.
-#let _navy-canvas(body, foot: none) = page(
+#let _navy-canvas(body, foot: none, top-inset: 1.5cm) = page(
   fill: probity-navy,
   margin: 0pt,
   header: none,
   footer: foot,
 )[
   #place(top + left, rect(width: 2.2mm, height: 100%, fill: probity-gold))
-  #block(width: 100%, height: 100%, inset: (left: 1.8cm, right: 1.6cm, top: 1.5cm, bottom: 1.1cm), body)
+  #block(width: 100%, height: 100%, inset: (left: 1.8cm, right: 1.6cm, top: top-inset, bottom: 1.1cm), body)
 ]
 
 // ── Main template ───────────────────────────────────────────────────────────
@@ -52,19 +52,8 @@
   // Page geometry + running chrome (white content slides; suppressed on page 1).
   set page(
     paper: "presentation-16-9",
-    margin: (left: 1.6cm, right: 1.6cm, top: 2.4cm, bottom: 1.1cm),
-    header-ascent: 0.5cm,
-    header: context {
-      if counter(page).get().first() > 1 {
-        grid(
-          columns: (auto, 1fr),
-          align(left + horizon, image(_logo-navy, height: 0.62cm)),
-          align(right + horizon, text(probity-muted, size: 9pt)[Data Analytics]),
-        )
-        v(5pt)
-        line(length: 100%, stroke: 0.5pt + probity-rule)
-      }
-    },
+    margin: (left: 1.6cm, right: 1.6cm, top: 0.85cm, bottom: 1.0cm),
+    header: none,
     footer: context {
       if counter(page).get().first() > 1 {
         set text(size: 9pt, fill: probity-muted)
@@ -81,16 +70,27 @@
   set text(font: body-font, size: 17pt, fill: probity-body, lang: lang)
   set par(leading: 0.65em)
 
-  // Each `##` (level-2 heading) starts a new white content slide.
-  show heading.where(level: 2): it => {
+  // Each `##` starts a new white content slide. Quarto normalises the deck's
+  // shallowest heading (`##`) to Typst level 1, so this rule targets level 1.
+  // The frame title sits on the left with the logo on the right, both above a
+  // hairline — matching the Beamer headline. (Author convention: use `##` for
+  // every slide; do not use `#`, or the level normalisation shifts.)
+  show heading.where(level: 1): it => {
     pagebreak(weak: true)
-    v(0.1cm)
-    block(below: 0.4em, text(size: 26pt, weight: "bold", fill: probity-navy)[#it.body])
+    grid(
+      columns: (1fr, auto),
+      align: (left + horizon, right + horizon),
+      text(size: 18pt, weight: "bold", fill: probity-navy)[#it.body],
+      image(_logo-navy, height: 0.62cm),
+    )
+    v(5pt)
+    line(length: 100%, stroke: 0.4pt + probity-rule)
+    v(0.5cm)
   }
-  // `###` becomes a slide subtitle line.
-  show heading.where(level: 3): it => {
-    text(size: 14pt, fill: probity-mid-blue)[#it.body]
-    v(0.2em)
+  // `###` (Typst level 2) becomes a slide subtitle line below the hairline.
+  show heading.where(level: 2): it => {
+    text(size: 13pt, fill: probity-mid-blue)[#it.body]
+    v(0.25em)
   }
 
   show strong: it => text(fill: probity-navy, weight: "bold")[#it.body]
@@ -147,18 +147,22 @@
   #v(1.6fr)
 ]
 
-// ── Navy content slide: white title + hairline, then `body` on navy ──
-#let prob-navy-slide(title, subtitle: none, foot: none, body) = _navy-canvas(foot: foot)[
-  #image(_logo-white, height: 0.7cm)
-  #v(4pt)
-  #line(length: 100%, stroke: 0.5pt + probity-light-blue.transparentize(40%))
-  #v(0.45cm)
-  #text(size: 26pt, weight: "bold", fill: white)[#title]
+// ── Navy content slide: frame title (left) + white logo (right) + hairline,
+//    then `body` on navy. Header geometry matches the white content slides. ──
+#let prob-navy-slide(title, subtitle: none, foot: none, body) = _navy-canvas(foot: foot, top-inset: 0.85cm)[
+  #grid(
+    columns: (1fr, auto),
+    align: (left + horizon, right + horizon),
+    text(size: 18pt, weight: "bold", fill: white)[#title],
+    image(_logo-white, height: 0.62cm),
+  )
+  #v(5pt)
+  #line(length: 100%, stroke: 0.4pt + probity-light-blue.transparentize(35%))
   #if subtitle != none {
-    v(0.2em)
-    text(size: 14pt, fill: probity-light-blue)[#subtitle]
+    v(0.3cm)
+    text(size: 13pt, fill: probity-light-blue)[#subtitle]
   }
-  #v(0.45cm)
+  #v(0.5cm)
   #body
 ]
 
