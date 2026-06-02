@@ -231,7 +231,10 @@ Write Markdown the normal way. Probity-specific patterns:
   `**Phrase.**` then continue in plain body text. Bold renders navy
   automatically — no extra markup needed.
 - **Tables**: standard pipe tables. Caption goes on the line immediately
-  after the closing row: `: Caption text {#tbl-id}`.
+  after the closing row: `: Caption text {#tbl-id}`. For **row groups**
+  (bold group labels with indented rows, à la `kableExtra::pack_rows`), call
+  the `probity-grouped-table(...)` helper from a raw `{=typst}` block — pipe
+  tables cannot express row groups. See README → "Grouped tables".
 - **Figures**: `![Caption](path/to/figure.png){#fig-id width=60%}`. Use
   paths relative to the `.qmd` file for user-supplied figures. Do NOT
   reference `_extensions/probity/assets/` for content figures — those are

@@ -152,6 +152,47 @@ project:
 
 The install script creates this automatically if it is missing.
 
+## Authoring reports
+
+### Grouped tables (row groups)
+
+Markdown pipe tables cannot express grouped rows (the `kableExtra::pack_rows` /
+`gt` row-group look). For those, call the `probity-grouped-table` helper from a
+raw `{=typst}` block. It draws booktabs-style navy rules, bolds the header, and
+renders each group as a full-width bold label with its rows indented beneath:
+
+````markdown
+```{=typst}
+#probity-grouped-table(
+  columns: (auto, auto, auto, auto, auto, auto, auto),
+  align: (left, right, right, right, right, right, right),
+  header: ([], [mpg], [cyl], [disp], [hp], [drat], [wt]),
+  ungrouped: (
+    ([Mazda RX4],     [21.0], [6], [160.0], [110], [3.90], [2.620]),
+    ([Datsun 710],    [22.8], [4], [108.0], [93],  [3.85], [2.320]),
+  ),
+  groups: (
+    (name: "Group 1", rows: (
+      ([Hornet 4 Drive], [21.4], [6], [258.0], [110], [3.08], [3.215]),
+      ([Valiant],        [18.1], [6], [225.0], [105], [2.76], [3.460]),
+    )),
+    (name: "Group 2", rows: (
+      ([Merc 240D], [24.4], [4], [146.7], [62], [3.69], [3.190]),
+      ([Merc 230],  [22.8], [4], [140.8], [95], [3.92], [3.150]),
+    )),
+  ),
+)
+```
+````
+
+- `header` — column headings (bolded for you); pass `none` to omit.
+- `ungrouped` — rows shown above the first group; omit for none.
+- `groups` — a list of `(name: "…", rows: (…))` dictionaries.
+
+The helper deliberately resets the report's zebra-stripe fill so the grouped
+layout reads cleanly. If you hand-build a grouped `#table` instead of using the
+helper, pass `fill: none` yourself for the same reason.
+
 ## Authoring slides
 
 ### Slide sections

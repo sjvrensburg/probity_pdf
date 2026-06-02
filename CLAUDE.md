@@ -33,8 +33,8 @@ The extension is a Quarto **format extension** in `_extensions/probity/`.
 ### Report format (`probity-typst`)
 
 - `_extension.yml` — registers both formats; `typst:` section sets TOC depth, caption locations.
-- `typst-template.typ` — pure Typst file defining `probity-report(...)`. Contains brand constants, page geometry, running header/footer, title page, and show rules.
-- `typst-show.typ` — Pandoc partial wiring front-matter into `probity-report(...)`.
+- `typst-template.typ` — pure Typst file defining `probity-report(...)`. Contains brand constants, page geometry, running header/footer, title page, and show rules. Also defines the `probity-grouped-table(...)` helper for row-grouped tables (callable from raw `{=typst}` blocks; markdown pipe tables can't express row groups). See README → "Grouped tables".
+- `typst-show.typ` — Pandoc partial wiring front-matter into `probity-report(...)`. Passes `authors` straight through to `document.author` (an empty array means no author — do not `.join()` it, an empty join yields `none` and fails compilation).
 
 ### Slide format (`probity-beamer`)
 
