@@ -154,7 +154,7 @@ The slide deck is a **dependency-free, page-based Typst** format (no Touying).
 hides when omitted/empty); `footer-center` is the slide-only centre running
 title — renamed from the slide deck's previous `footer-text`.
 
-**Slide authoring — two modes:**
+**Slide authoring — three modes:**
 
 1. **Plain slides** — a `## Heading` starts a new white content slide (frame
    title left, logo right, above a hairline); write normal
@@ -165,6 +165,10 @@ title — renamed from the slide deck's previous `footer-text`.
 2. **Card / navy slides** — call a helper from a raw ` ```{=typst} ` block.
    Brand colours (`probity-navy`, `probity-gold`, `probity-green`,
    `probity-mid-blue`, `probity-red`) and the helpers are in scope there.
+3. **Full-bleed image slides** — call `prob-image-slide("path/to/image.png")`
+   from a raw ` ```{=typst} ` block. Image fills the entire 16:9 frame with no
+   margins, title, or footer. Use `fit: "cover"` (default, may crop) or
+   `fit: "contain"` (entire image visible, may letterbox).
 
 Key helpers (all in `_extensions/probity-slides/typst-template.typ`, full
 examples in `template-slides.qmd` and README → "Authoring slides"):
@@ -173,6 +177,7 @@ examples in `template-slides.qmd` and README → "Authoring slides"):
 |---|---|
 | `prob-section(title, subtitle:)` | Full-navy section divider |
 | `prob-navy-slide(title, subtitle:)[…]` | Navy content slide (hosts equation box + metric cards) |
+| `prob-image-slide(path, fit:)` | Full-bleed image slide (16:9, no margins/title/footer) |
 | `prob-scenario-cards((…))` | Row of accent-bar cards on a white slide |
 | `prob-metric-cards((…))` | Row of gold-bar metric cards on a navy slide |
 | `prob-steps((…))` | Numbered-circle process list |
@@ -180,9 +185,12 @@ examples in `template-slides.qmd` and README → "Authoring slides"):
 | `prob-result-card(value, …)` | Pale-tint card with a big headline value |
 | `prob-equation-box[…]` | Gold-bordered centred equation |
 | `prob-cols(left, right, ratio:)` | Two columns (Quarto `.columns` does NOT work in Typst) |
+| `prob-measure(content, max-height:)` | Wrap slide content to detect overflow during editing (shows red warning) |
 
 **One-page rule:** there is no auto-fit — content taller than the body spills
-silently onto the next page. Card helpers take a `height:` parameter; trim text
+silently onto the next page. To detect overflow during editing, wrap your slide
+content in `prob-measure([ ... ])`, which displays a red warning box if the
+content exceeds ~13.2 cm. Card helpers take a `height:` parameter; trim text
 or lower the height if a slide overflows. For two-column slides pass an explicit
 `cm` height to the cards (never rely on `height: 100%`, which overflows).
 
@@ -236,8 +244,14 @@ Confirm on every slide:
 - **Content slides:** navy bold title top-left, Probity logo top-right (both
   vertically centred in the header band), `#D5DEE9` hairline below the header.
   White body area. Page number bottom-right. No other footer elements.
+  **Bold text** (e.g. `**emphasis**`) renders navy on white slides and white
+  on navy backgrounds (for visibility).
 - **Section dividers:** full navy background, gold vertical bar, bold white
   title, gold rule, optional gold subtitle. No header or footer visible.
+- **Image-only slides** (via `prob-image-slide()`): full-bleed image covering
+  entire 16:9 frame with no margins, title, or footer. Image fills or fits
+  depending on the `fit:` parameter ("cover" scales and crops, "contain"
+  preserves aspect ratio).
 
 ### Step 7 — Voice and spelling pass
 
@@ -369,7 +383,15 @@ Correct behaviour. The cover page has no running header or footer by design.
 **A card slide bled onto the next page**
 There is no auto-fit. Lower the card's `height:` parameter or trim its text so
 the slide's content fits the ~13.2 cm body. Never use `height: 100%` in a
-`prob-cols` column — it resolves against the page and overflows.
+`prob-cols` column — it resolves against the page and overflows. To debug
+during editing, wrap your content in `prob-measure([ ... ])` — it displays a
+red warning box if content exceeds the safe height.
+
+**Image slide looks distorted or has unexpected margins**
+Check the `fit:` parameter in `prob-image-slide()`: use `fit: "cover"` (default,
+scales to fill, may crop edges) or `fit: "contain"` (entire image visible, may
+add letterboxing). For a portrait image on a 16:9 slide, use `fit: "contain"`
+to avoid distortion.
 
 ---
 
