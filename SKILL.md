@@ -1,17 +1,18 @@
 ---
 name: probity-quarto
-description: "Create branded PDF outputs for Probity Data Analytics using the Quarto extension in this repository. Use this skill whenever the user asks to write, draft, restyle, or produce a Probity PDF report or slide deck from Quarto or Markdown: methodology write-ups, technical reports, audit-trail documents, memos, proposals, client deliverables, presentations, or anything that will leave the studio under the Probity name. Trigger it even when the user only says 'make a Probity report', 'use our PDF template', 'apply our branding', or attaches a Quarto/Markdown file to convert. Output is always a PDF file (not Word/docx). Two formats are available: probity-typst (A4 report, no LaTeX) and probity-beamer (16:9 slides, XeLaTeX). It pins down the navy/gold palette, Calibri type, Probity visual identity, and the Probity writing voice."
+description: "Create branded PDF outputs for Probity Data Analytics using the Quarto extension in this repository. Use this skill whenever the user asks to write, draft, restyle, or produce a Probity PDF report or slide deck from Quarto or Markdown: methodology write-ups, technical reports, audit-trail documents, memos, proposals, client deliverables, presentations, or anything that will leave the studio under the Probity name. Trigger it even when the user only says 'make a Probity report', 'use our PDF template', 'apply our branding', or attaches a Quarto/Markdown file to convert. Output is always a PDF file (not Word/docx). Formats: probity-typst (A4 report, no LaTeX) and probity-slides-typst (16:9 slides, no LaTeX, with a card-component library); probity-beamer is a legacy XeLaTeX slide deck superseded by probity-slides-typst. It pins down the navy/gold palette, Calibri type, Probity visual identity, and the Probity writing voice."
 ---
 
 # Probity Data Analytics — Quarto PDF templates (agent guide)
 
 This skill produces brand-compliant PDF outputs for Probity Data Analytics
-through Quarto. Two formats are available:
+through Quarto:
 
 | Format | Output | Engine | Use for |
 |---|---|---|---|
 | `probity-typst` | A4 report | Typst — no LaTeX required | Written reports, methodology, deliverables |
-| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Client presentations, slide decks |
+| `probity-slides-typst` | 16:9 slides | Typst — no LaTeX required | Client presentations, slide decks |
+| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Legacy — superseded by `probity-slides-typst` |
 
 The extension lives at `/home/stefan/Documents/probity_pdf/` (the
 `probity_pdf` repository). When working in an external project, install it
@@ -112,7 +113,7 @@ abstract: |
 | `abstract` | Pale-tint block with navy left border on cover | Recommended |
 | `toc` | `true` (default) shows a Contents page; set `false` to suppress | Optional |
 
-**Slide deck front matter** (`format: probity-beamer`):
+**Slide deck front matter** (`format: probity-slides-typst`):
 
 ```yaml
 ---
@@ -120,7 +121,8 @@ title: "Presentation Title"
 subtitle: "A short descriptive subtitle"
 author: "Author Name, Role"
 date: today
-format: probity-beamer
+format: probity-slides-typst
+footer-text: "Optional centre-footer running title"
 lang: en-GB
 ---
 ```
@@ -129,35 +131,43 @@ lang: en-GB
 |---|---|---|
 | `title` | Bold white title on the navy title slide | Yes |
 | `subtitle` | Gold subtitle below title on the title slide | Recommended |
-| `author` | Light-blue author line at bottom of title slide | Recommended |
+| `author` | Light-blue author line near the bottom of the title slide | Recommended |
 | `date` | Appended to author, separated by a pipe | Recommended |
-| `format` | Must be `probity-beamer` | Yes |
+| `footer-text` | Centre-footer running title on content slides | Optional |
+| `format` | Must be `probity-slides-typst` (the short `probity-slides` does not resolve) | Yes |
 | `lang` | Document language; use `en-GB` for Probity | Recommended |
 
-**Slide authoring — section dividers:**
+The slide deck is a **dependency-free, page-based Typst** format (no Touying).
+The legacy XeLaTeX deck is still available as `format: probity-beamer`
+(starter `template-beamer.qmd`) but should not be used for new work.
 
-Use a `## {.plain}` heading followed by a raw LaTeX block to insert a
-full-navy section divider slide. The `{.plain}` attribute suppresses the
-running header and footer so the TikZ navy background fills the entire slide.
+**Slide authoring — two modes:**
 
-```markdown
-## {.plain}
+1. **Plain slides** — a `## Heading` starts a new white content slide; write
+   normal Markdown beneath it (bullets, numbered lists, text, `###` subtitle).
+2. **Card / navy slides** — call a helper from a raw ` ```{=typst} ` block.
+   Brand colours (`probity-navy`, `probity-gold`, `probity-green`,
+   `probity-mid-blue`, `probity-red`) and the helpers are in scope there.
 
-```{=latex}
-\ProbSectionContent{Part One: Findings}{}
-\ProbSectionContent{Part Two: Method}{How we built it}
-```
-```
+Key helpers (all in `_extensions/probity-slides/typst-template.typ`, full
+examples in `template-slides.qmd` and README → "Authoring slides"):
 
-The first argument is the section title; the second is an optional subtitle
-(pass empty `{}` to omit). Do **not** wrap `\ProbSectionContent` in a
-`\begin{frame}` — the `##` heading already creates the frame.
+| Helper | Slide / element |
+|---|---|
+| `prob-section(title, subtitle:)` | Full-navy section divider |
+| `prob-navy-slide(title, subtitle:)[…]` | Navy content slide (hosts equation box + metric cards) |
+| `prob-scenario-cards((…))` | Row of accent-bar cards on a white slide |
+| `prob-metric-cards((…))` | Row of gold-bar metric cards on a navy slide |
+| `prob-steps((…))` | Numbered-circle process list |
+| `prob-formula-card((…), …)` | Navy card of aligned `name = expr` mono lines |
+| `prob-result-card(value, …)` | Pale-tint card with a big headline value |
+| `prob-equation-box[…]` | Gold-bordered centred equation |
+| `prob-cols(left, right, ratio:)` | Two columns (Quarto `.columns` does NOT work in Typst) |
 
-**Slide authoring — content slides:**
-
-Standard Quarto Markdown. Each `##` heading becomes a slide. Supported:
-bullet lists, numbered lists, two-column layouts (Pandoc `.columns` div),
-pipe tables, fenced code blocks, and raw LaTeX blocks.
+**One-page rule:** there is no auto-fit — content taller than the body spills
+silently onto the next page. Card helpers take a `height:` parameter; trim text
+or lower the height if a slide overflows. For two-column slides pass an explicit
+`cm` height to the cards (never rely on `height: 100%`, which overflows).
 
 ### Step 4 — Apply writing conventions
 
@@ -303,7 +313,8 @@ Apply every rule to every word in a Probity document.
 | Primary font | Calibri (Carlito → Liberation Sans → Arial fallback) |
 | Mono / code | Consolas (Courier New → Liberation Mono fallback) |
 | Report format | `probity-typst` — PDF via Typst, no LaTeX required; page size A4 |
-| Slides format | `probity-beamer` — PDF via XeLaTeX + Beamer; aspect ratio 16:9 |
+| Slides format | `probity-slides-typst` — PDF via Typst, 16:9; card-component library |
+| Legacy slides | `probity-beamer` — XeLaTeX + Beamer; superseded, do not use for new work |
 
 ---
 
@@ -343,9 +354,10 @@ sudo apt-get install fonts-crosextra-carlito   # Debian/Ubuntu
 **Render succeeds but header/footer missing on page 1 (report)**
 Correct behaviour. The cover page has no running header or footer by design.
 
-**Header missing on section divider slides**
-Correct behaviour. `{.plain}` suppresses the headline and footline via
-Beamer's built-in mechanism, leaving only the TikZ navy background.
+**A card slide bled onto the next page**
+There is no auto-fit. Lower the card's `height:` parameter or trim its text so
+the slide's content fits the ~13.2 cm body. Never use `height: 100%` in a
+`prob-cols` column — it resolves against the page and overflows.
 
 ---
 
@@ -356,28 +368,28 @@ font stacks, layout) then re-render `template.qmd` to confirm. The
 `typst-show.typ` file wires front-matter variables into the
 `probity-report()` function; only edit it to expose additional variables.
 
-**Typst 0.10 constraint.** Quarto 1.4 bundles Typst 0.10. The template
-avoids `context { }` blocks and `table.cell` selectors (both require Typst
-0.11+). Use `locate(loc => ...)` for any page-aware additions.
+**Slides (Typst):** edit `_extensions/probity-slides/typst-template.typ` — brand
+constants, the `probity-slides()` page/chrome function, and the card helpers.
+Re-render `template-slides.qmd` and inspect with `pdftoppm -r 110`. Page-aware
+content uses `context { ... }` (Typst 0.11+); the old `locate(loc => ...)` form
+was removed after Typst 0.10 and must not be reintroduced.
 
-**Slides:** edit `_extensions/probity/probity-beamer.sty` (colour
-definitions, headline/footline templates, title page and section divider
-TikZ). Do **not** call `\setsansfont` inside the `.sty` — Quarto's
-`font-settings.latex` partial handles this via `sansfont: Carlito` in
-`_extension.yml`; a double call causes a fontspec error. After edits,
-re-render `template-slides.qmd` and inspect with `pdftoppm -r 144`.
+**Legacy Beamer slides:** edit `_extensions/probity/probity-beamer.sty`. Do
+**not** call `\setsansfont` inside it (Quarto handles fonts via `sansfont:`).
+Kept for back-compatibility; prefer the Typst deck for new work.
 
 ---
 
 ## Files in this repository
 
-- `_extensions/probity/_extension.yml` — format definitions (`probity-typst`, `probity-beamer`)
-- `_extensions/probity/typst-template.typ` — Typst template function (report)
+- `_extensions/probity/typst-template.typ` — Typst template function (report) + `probity-grouped-table` helper
 - `_extensions/probity/typst-show.typ` — Pandoc partial wiring front matter (report)
-- `_extensions/probity/probity-beamer.sty` — Beamer theme (slides)
-- `_extensions/probity/assets/logo_trim.png` — cover page wordmark
-- `_extensions/probity/assets/logo_navy_small.png` — running header wordmark (slides: top-right)
-- `_extensions/probity/assets/logo_white.png` — white logo for navy backgrounds (title slide)
+- `_extensions/probity/probity-beamer.sty` — legacy Beamer theme
+- `_extensions/probity-slides/typst-template.typ` — Typst slide template + card-component library
+- `_extensions/probity-slides/typst-show.typ` — Pandoc partial wiring front matter (slides)
+- `_extensions/probity-slides/assets/` — slide-deck copy of the logos
+- `_extensions/probity/assets/logo_trim.png` — report cover wordmark
 - `template.qmd` — starter report document
-- `template-slides.qmd` — starter slide deck
-- `install.sh` — installs the extension into another project
+- `template-slides.qmd` — starter slide deck (Typst)
+- `template-beamer.qmd` — starter slide deck (legacy Beamer)
+- `install.sh` — installs the report extension into another project

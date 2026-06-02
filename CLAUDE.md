@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-A Quarto format extension providing two branded PDF formats for Probity Data Analytics:
+Branded Quarto formats for Probity Data Analytics — all output via Typst (no LaTeX required), except the legacy Beamer deck:
 
-- **`probity-typst`** — A4 report (cover page, TOC, running header/footer). Output via Typst — no LaTeX required.
-- **`probity-beamer`** — 16:9 slide deck (navy/gold, Carlito). Output via XeLaTeX/Beamer. Design aligned with the GRAP104 PowerPoint master.
+- **`probity-typst`** — A4 report (cover page, TOC, running header/footer). Extension dir `_extensions/probity/`.
+- **`probity-slides-typst`** — 16:9 slide deck (navy/gold, Carlito) with a card-component library. Extension dir `_extensions/probity-slides/`. **This is the current slide format.**
+- **`probity-beamer`** — legacy 16:9 XeLaTeX/Beamer deck, superseded by `probity-slides-typst`. Kept for back-compatibility only; do not extend it.
 
 ## Key commands
 
@@ -15,20 +16,23 @@ A Quarto format extension providing two branded PDF formats for Probity Data Ana
 # Render the report starter template
 quarto render template.qmd
 
-# Render the slide deck starter template
+# Render the slide deck starter template (Typst)
 quarto render template-slides.qmd
+
+# Render the legacy Beamer deck
+quarto render template-beamer.qmd
 
 # Visual check — convert PDF to images and inspect
 pdftoppm -png -r 90 template.pdf build/pg
-pdftoppm -png -r 144 template-slides.pdf build/slides-pg
+pdftoppm -png -r 110 template-slides.pdf build/slides-pg
 
-# Install the extension into another project
+# Install the report extension into another project
 ./install.sh /path/to/target/project
 ```
 
 ## Architecture
 
-The extension is a Quarto **format extension** in `_extensions/probity/`.
+The extension lives in two directories: `_extensions/probity/` (report + legacy Beamer) and `_extensions/probity-slides/` (Typst slides).
 
 ### Report format (`probity-typst`)
 
@@ -36,7 +40,25 @@ The extension is a Quarto **format extension** in `_extensions/probity/`.
 - `typst-template.typ` — pure Typst file defining `probity-report(...)`. Contains brand constants, page geometry, running header/footer, title page, and show rules. Also defines the `probity-grouped-table(...)` helper for row-grouped tables (callable from raw `{=typst}` blocks; markdown pipe tables can't express row groups). See README → "Grouped tables".
 - `typst-show.typ` — Pandoc partial wiring front-matter into `probity-report(...)`. Passes `authors` straight through to `document.author` (an empty array means no author — do not `.join()` it, an empty join yields `none` and fails compilation).
 
-### Slide format (`probity-beamer`)
+### Slide format (`probity-slides-typst`)
+
+Dependency-free, **page-based** Typst slides (no Touying/polylux). Lives in `_extensions/probity-slides/`.
+
+- `_extension.yml` — registers a `typst` format (`presentation-16-9`). Referenced as `format: probity-slides-typst` (the short `probity-slides` does **not** resolve).
+- `typst-template.typ` — defines `probity-slides(...)` plus the slide/card helpers. Mechanism:
+  - `set page(paper: "presentation-16-9", header:, footer:)` draws the running logo + hairline header and page-number footer on every content slide (suppressed on page 1, the title slide).
+  - `show heading.where(level: 2): it => { pagebreak(weak: true); <navy title> }` — **each `##` starts a new white content slide**. `###` becomes a subtitle line.
+  - Full-bleed navy slides (title, section dividers, navy content) are produced by `#page(fill: navy, margin: 0pt, header: none, footer: none)` inside the `_navy-canvas` helper — a `page()` call mid-document yields isolated pages with their own chrome, and the page counter keeps incrementing so footers stay correct.
+- `typst-show.typ` — wires front matter (`title`, `subtitle`, `authors`, `date`, `footer-text`) into `probity-slides(...)`.
+- `assets/` — own copy of the logos; referenced as `_extensions/probity-slides/assets/...` (resolved against the document dir, like the report).
+
+**Authoring model (two modes):**
+- Plain text/bullet slide → `## Title` + markdown. The heading show-rule renders the slide.
+- Any slide with cards or a full-navy background → a raw ` ```{=typst} ` block calling a helper (`prob-section`, `prob-navy-slide`, `prob-scenario-cards`, `prob-steps`, `prob-formula-card`, `prob-result-card`, `prob-metric-cards`, `prob-equation-box`, `prob-cols`). These give a hard one-page boundary and `v(1fr)` space-between layout.
+
+**One-page caveat:** there is no auto-fit. Content slides flow; if a component is taller than the ~13.2 cm body it silently spills onto the next page. Card helpers take a `height:` parameter and ship with conservative defaults sized to fit. `height: 100%` inside an auto grid row resolves against the *page* (not the sibling column) and overflows — pass an explicit `cm` height to balance two-column slides instead. Quarto's native `::: {.columns}` does **not** produce side-by-side layout in Typst output; use the `prob-cols(left, right, ratio:)` helper.
+
+### Legacy slide format (`probity-beamer`)
 
 - `_extension.yml` — `beamer:` section: xelatex, 16:9, Carlito via `sansfont:`, `format-resources` for asset delivery.
 - `probity-beamer.sty` — complete Beamer theme. Do NOT call `\setsansfont` here (Quarto handles it via `font-settings.latex`).
