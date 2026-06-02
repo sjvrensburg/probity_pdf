@@ -58,12 +58,19 @@ The extension is a Quarto **format extension** in `_extensions/probity/`.
 
 **Rendering pipeline:** Quarto converts `.qmd` → Pandoc → `<file>.typ` (with the template inlined) → Typst compiler → `<file>.pdf`. The template contents are inlined verbatim into the generated `.typ` at the project root, so all image paths in `typst-template.typ` must be relative to the project root (i.e. `_extensions/probity/assets/logo_trim.png`, not `assets/logo_trim.png`).
 
-## Typst 0.10 constraint
+## Typst version
 
-Quarto 1.4 bundles Typst 0.10. The template must avoid:
-- `context { }` blocks — use `locate(loc => ...)` instead for page-aware content.
-- `table.cell` selectors — not available until Typst 0.11.
-- `align:` as a `grid()` parameter — apply `align(...)` inside each cell instead.
+Quarto 1.9 bundles Typst 0.14. Page-aware content (the running header/footer and
+"Page X of Y") uses `context { ... }` with `counter(page).get()` and
+`counter(page).final()`. The old `locate(loc => ...)` callback form was removed
+after Typst 0.10 and must not be reintroduced. The minimum supported toolchain is
+Quarto 1.5 / Typst 0.11 — the first release with `context` — pinned via
+`quarto-required: ">=1.5.0"` in `_extension.yml`.
+
+Quarto now emits `table.header(...)` for table header rows, so a header repeats
+automatically when a table spans a page break. The `set table(fill: ...)` rule in
+`typst-template.typ` fills the header (row 0) with the hairline blue and
+zebra-stripes the body; that logic is unaffected by the semantic header markup.
 
 ## Extension discovery requirement
 

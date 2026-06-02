@@ -1,6 +1,6 @@
 // Probity Data Analytics — typst-template.typ
 // Brand: navy/gold palette, Calibri, logo header, page-numbered footer.
-// Compatible with Typst 0.10 (Quarto 1.4).
+// Targets Typst 0.11+ (Quarto 1.5+); uses context-based page chrome.
 
 #let probity-navy      = rgb("#0A325A")
 #let probity-deep-navy = rgb("#062340")
@@ -36,8 +36,8 @@
   set page(
     paper: "a4",
     margin: (top: 2.8cm, bottom: 2.5cm, left: 2.5cm, right: 2.5cm),
-    header: locate(loc => {
-      let pg = counter(page).at(loc).at(0)
+    header: context {
+      let pg = counter(page).get().first()
       if pg > 1 [
         #set text(font: body-font, size: 9pt)
         #grid(
@@ -48,9 +48,9 @@
         #v(-4pt)
         #line(length: 100%, stroke: 0.5pt + probity-navy)
       ]
-    }),
-    footer: locate(loc => {
-      let pg = counter(page).at(loc).at(0)
+    },
+    footer: context {
+      let pg = counter(page).get().first()
       if pg > 1 [
         #line(length: 100%, stroke: 0.5pt + probity-rule)
         #v(-2pt)
@@ -62,14 +62,11 @@
             #text(" · Confidential", fill: probity-muted)
           ],
           align(right)[
-            #text(fill: probity-muted)[Page ]
-            #counter(page).display("1")
-            #text(fill: probity-muted)[ of ]
-            #counter(page).final(loc).at(0)
+            #text(fill: probity-muted)[Page #pg of #counter(page).final().first()]
           ],
         )
       ]
-    }),
+    },
   )
 
   // ── Base typography ─────────────────────────────────────────────────────
@@ -116,8 +113,8 @@
   }
 
   // ── Tables ──────────────────────────────────────────────────────────────
-  // Typst 0.10: table.cell selector unavailable, so we style header via fill
-  // and bold navy text on a pale-tint background (no white-on-navy).
+  // Header row gets a hairline-blue fill with bold navy text (no white-on-navy);
+  // body rows zebra-stripe between white and the pale tint.
   set table(
     stroke: none,
     fill: (_, row) => if row == 0 { rgb("#D5DEE9") }
