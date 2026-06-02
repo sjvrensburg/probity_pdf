@@ -52,7 +52,7 @@ Dependency-free, **page-based** Typst slides (no Touying/polylux). Lives in `_ex
 
 **Authoring model (two modes):**
 - Plain text/bullet slide → `## Title` + markdown. The heading show-rule renders the slide.
-- Any slide with cards or a full-navy background → a raw ` ```{=typst} ` block calling a helper (`prob-section`, `prob-navy-slide`, `prob-scenario-cards`, `prob-steps`, `prob-formula-card`, `prob-result-card`, `prob-metric-cards`, `prob-equation-box`, `prob-cols`, `prob-measure`). These give a hard one-page boundary and `v(1fr)` space-between layout.
+- Any slide with cards, navy background, or full-bleed image → a raw ` ```{=typst} ` block calling a helper (`prob-section`, `prob-navy-slide`, `prob-image-slide`, `prob-scenario-cards`, `prob-steps`, `prob-formula-card`, `prob-result-card`, `prob-metric-cards`, `prob-equation-box`, `prob-cols`, `prob-measure`). These give a hard one-page boundary and `v(1fr)` space-between layout.
 
 **One-page caveat:** there is no auto-fit. Content slides flow; if a component is taller than the ~13.2 cm body it silently spills onto the next page. To detect overflow during editing, wrap content in `prob-measure([ ... ])`, which displays a red warning box if content exceeds the safe height. Card helpers take a `height:` parameter and ship with conservative defaults sized to fit. `height: 100%` inside an auto grid row resolves against the *page* (not the sibling column) and overflows — pass an explicit `cm` height to balance two-column slides instead. Quarto's native `::: {.columns}` does **not** produce side-by-side layout in Typst output; use the `prob-cols(left, right, ratio:)` helper.
 

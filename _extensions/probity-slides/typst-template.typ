@@ -330,3 +330,16 @@
 #let prob-cols(left, right, ratio: (1fr, 1fr), gutter: 1cm) = grid(
   columns: ratio, column-gutter: gutter, align: top, left, right,
 )
+
+// ── Full-bleed image slide (no margins, title, or footer) ──
+// Usage: #prob-image-slide("path/to/image.png")
+// fit: "cover" (default, scales to fill while maintaining aspect ratio, may crop)
+//      "contain" (entire image visible, may have letterboxing)
+#let prob-image-slide(image-path, fit: "cover") = page(
+  paper: "presentation-16-9",
+  margin: 0pt,
+  header: none,
+  footer: none,
+)[
+  #image(image-path, width: 100%, height: 100%, fit: fit)
+]
