@@ -37,6 +37,19 @@ abstract: |
 ---
 ```
 
+The running header and footer text (from page 2 onward) can be set from the
+front matter:
+
+```yaml
+header-text: "Data Analytics"          # right of the logo (omit → default)
+footer-text: "Probity Data Analytics"  # bold navy brand at the foot, left (omit → default)
+footer-note: "Confidential"            # muted classification (e.g. "Draft", "Public")
+```
+
+`header-text` and `footer-text` fall back to their brand defaults when omitted.
+`footer-note` is optional — **omit it (or set it empty) to show no
+classification** at all; the starter template sets `"Confidential"`.
+
 ### Slide deck
 
 ```bash

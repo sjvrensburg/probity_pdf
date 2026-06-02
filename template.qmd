@@ -5,6 +5,10 @@ author: "Author Name, Role"
 date: today
 format: probity-typst
 lang: en-GB
+# Running header/footer text (all optional):
+header-text: "Data Analytics"          # right of the logo (omit → default "Data Analytics")
+footer-text: "Probity Data Analytics"  # bold navy brand at the foot, left (omit → default)
+footer-note: "Confidential"            # muted classification note; remove this line to show no note
 abstract: |
   One short paragraph stating what this document is and what it concludes.
   Lead with the answer, then the qualification.

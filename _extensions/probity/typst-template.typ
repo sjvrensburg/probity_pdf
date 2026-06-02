@@ -23,6 +23,10 @@
   abstract: none,
   toc: true,
   lang: "en",
+  // Running header/footer text — overridable from the YAML front matter.
+  header-text: [Data Analytics],          // header, right of the logo
+  footer-text: [Probity Data Analytics],  // footer, bold navy (left)
+  footer-note: [],                        // optional muted note after the brand; empty = hidden
   doc,
 ) = {
 
@@ -46,7 +50,7 @@
         #grid(
           columns: (1fr, auto),
           image("_extensions/probity/assets/logo_navy_small.png", height: 16pt),
-          align(right + horizon)[#text("Data Analytics", fill: probity-muted)],
+          align(right + horizon)[#text(fill: probity-muted)[#header-text]],
         )
         #v(-4pt)
         #line(length: 100%, stroke: 0.5pt + probity-navy)
@@ -60,10 +64,12 @@
         #set text(font: body-font, size: 9pt)
         #grid(
           columns: (1fr, auto),
-          [
-            #text(weight: "bold", fill: probity-navy)[Probity Data Analytics]
-            #text(" · Confidential", fill: probity-muted)
-          ],
+          {
+            text(weight: "bold", fill: probity-navy)[#footer-text]
+            if footer-note != [] {
+              text(fill: probity-muted)[ · #footer-note]
+            }
+          },
           align(right)[
             #text(fill: probity-muted)[Page #pg of #counter(page).final().first()]
           ],

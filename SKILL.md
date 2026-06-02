@@ -112,6 +112,15 @@ abstract: |
 | `lang` | Document language; use `en-GB` for Probity | Recommended |
 | `abstract` | Pale-tint block with navy left border on cover | Recommended |
 | `toc` | `true` (default) shows a Contents page; set `false` to suppress | Optional |
+| `header-text` | Running-header text right of the logo (omit → default "Data Analytics") | Optional |
+| `footer-text` | Bold navy brand text at the foot, left (omit → default "Probity Data Analytics") | Optional |
+| `footer-note` | Muted classification after the footer brand — e.g. "Confidential", "Draft", "Public". **Omit (or leave empty) to show no note.** The starter sets "Confidential". | Optional |
+
+The running header/footer appear from page 2 onward (not the cover).
+`header-text` and `footer-text` are brand defaults — omit to keep them.
+`footer-note` is optional: set it to show a classification, omit it (or set it
+empty) to show none. Special characters and dashes render correctly (the values
+are passed as content).
 
 **Slide deck front matter** (`format: probity-slides-typst`):
 
