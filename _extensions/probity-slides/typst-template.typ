@@ -80,12 +80,12 @@
     grid(
       columns: (1fr, auto),
       align: (left + horizon, right + horizon),
-      text(size: 18pt, weight: "bold", fill: probity-navy)[#it.body],
-      image(_logo-navy, height: 0.62cm),
+      text(size: 24pt, weight: "bold", fill: probity-navy)[#it.body],
+      image(_logo-navy, height: 0.9cm),
     )
-    v(5pt)
+    v(6pt)
     line(length: 100%, stroke: 0.4pt + probity-rule)
-    v(0.5cm)
+    v(0.55cm)
   }
   // `###` (Typst level 2) becomes a slide subtitle line below the hairline.
   show heading.where(level: 2): it => {
@@ -153,10 +153,10 @@
   #grid(
     columns: (1fr, auto),
     align: (left + horizon, right + horizon),
-    text(size: 18pt, weight: "bold", fill: white)[#title],
-    image(_logo-white, height: 0.62cm),
+    text(size: 24pt, weight: "bold", fill: white)[#title],
+    image(_logo-white, height: 0.9cm),
   )
-  #v(5pt)
+  #v(6pt)
   #line(length: 100%, stroke: 0.4pt + probity-light-blue.transparentize(35%))
   #if subtitle != none {
     v(0.3cm)
