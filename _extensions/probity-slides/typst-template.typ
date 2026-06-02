@@ -26,13 +26,15 @@
 
 // ── Full-bleed navy canvas (title / section / navy content slides) ─────────────
 // margin 0 so the gold edge bar and background reach the page edges; inner
-// padding is applied to `body`.
+// padding is applied to `body`. Override bold text to white so it's visible on
+// navy backgrounds (issue #6).
 #let _navy-canvas(body, foot: none, top-inset: 1.5cm) = page(
   fill: probity-navy,
   margin: 0pt,
   header: none,
   footer: foot,
 )[
+  #show strong: it => text(fill: white, weight: "bold")[#it.body]
   #place(top + left, rect(width: 2.2mm, height: 100%, fill: probity-gold))
   #block(width: 100%, height: 100%, inset: (left: 1.8cm, right: 1.6cm, top: top-inset, bottom: 1.1cm), body)
 ]
@@ -140,6 +142,27 @@
 // ════════════════════════════════════════════════════════════════════════════
 // Slide helpers — call from a raw ```{=typst} block.
 // ════════════════════════════════════════════════════════════════════════════
+
+// Measure content height and warn if it exceeds slide body height (~13.2cm).
+// Usable white-slide body is ~13.2cm; navy-slide body depends on header height.
+// Usage: wrap slide content in `prob-measure([ ... ])` to check fit during editing.
+#let prob-measure(content, label: "Content", max-height: 13.2cm) = {
+  let measured = measure(content)
+  let is-tall = measured.height > max-height
+  if is-tall {
+    block(
+      width: 100%, fill: rgb("#FFE8E8"), stroke: 1pt + rgb("#D32F2F"), radius: 2pt,
+      inset: 10pt,
+    )[
+      #text(size: 9pt, fill: rgb("#D32F2F"), weight: "bold")[
+        ⚠ Overflow risk: content is #(measured.height.mm.round(decimals: 1))mm \
+        (max safe: #(max-height.mm.round(decimals: 1))mm)
+      ]
+    ]
+    v(0.3cm)
+  }
+  content
+}
 
 // Spaced small-caps label used on every card.
 #let _eyebrow(label, fill: probity-navy) = text(
