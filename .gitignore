@@ -1,5 +1,15 @@
 *.pdf
 # Quarto-generated Typst source (root level only)
 /*.typ
-build/pg*.png
+# Scratch dir for visual checks (pdftoppm output)
+build/
 .quarto/
+
+/.quarto/
+**/*.quarto_ipynb
+
+# Beamer format-resources Quarto copies next to the document at render time
+# (sources of record live in _extensions/probity/)
+/probity-beamer.sty
+/logo_white.png
+/logo_navy_small.png

@@ -1,6 +1,6 @@
 // Probity Data Analytics — typst-template.typ
 // Brand: navy/gold palette, Calibri, logo header, page-numbered footer.
-// Compatible with Typst 0.10 (Quarto 1.4).
+// Targets Typst 0.11+ (Quarto 1.5+); uses context-based page chrome.
 
 #let probity-navy      = rgb("#0A325A")
 #let probity-deep-navy = rgb("#062340")
@@ -27,17 +27,20 @@
 ) = {
 
   // ── Document metadata ──────────────────────────────────────────────────
+  // `document.author` takes the array directly; an empty array means "no
+  // author". (Avoid authors.join(", ") — an empty array joins to `none`, which
+  // document.author rejects, so an author-less document would fail to compile.)
   set document(
     title: if title != none { title } else { "" },
-    author: authors.join(", "),
+    author: authors,
   )
 
   // ── Page geometry and running chrome ───────────────────────────────────
   set page(
     paper: "a4",
     margin: (top: 2.8cm, bottom: 2.5cm, left: 2.5cm, right: 2.5cm),
-    header: locate(loc => {
-      let pg = counter(page).at(loc).at(0)
+    header: context {
+      let pg = counter(page).get().first()
       if pg > 1 [
         #set text(font: body-font, size: 9pt)
         #grid(
@@ -48,9 +51,9 @@
         #v(-4pt)
         #line(length: 100%, stroke: 0.5pt + probity-navy)
       ]
-    }),
-    footer: locate(loc => {
-      let pg = counter(page).at(loc).at(0)
+    },
+    footer: context {
+      let pg = counter(page).get().first()
       if pg > 1 [
         #line(length: 100%, stroke: 0.5pt + probity-rule)
         #v(-2pt)
@@ -62,14 +65,11 @@
             #text(" · Confidential", fill: probity-muted)
           ],
           align(right)[
-            #text(fill: probity-muted)[Page ]
-            #counter(page).display("1")
-            #text(fill: probity-muted)[ of ]
-            #counter(page).final(loc).at(0)
+            #text(fill: probity-muted)[Page #pg of #counter(page).final().first()]
           ],
         )
       ]
-    }),
+    },
   )
 
   // ── Base typography ─────────────────────────────────────────────────────
@@ -116,8 +116,8 @@
   }
 
   // ── Tables ──────────────────────────────────────────────────────────────
-  // Typst 0.10: table.cell selector unavailable, so we style header via fill
-  // and bold navy text on a pale-tint background (no white-on-navy).
+  // Header row gets a hairline-blue fill with bold navy text (no white-on-navy);
+  // body rows zebra-stripe between white and the pale tint.
   set table(
     stroke: none,
     fill: (_, row) => if row == 0 { rgb("#D5DEE9") }
@@ -192,4 +192,75 @@
   }
 
   doc
+}
+
+// ── Grouped table helper ─────────────────────────────────────────────────────
+// Booktabs-style table with bold navy group labels spanning all columns and
+// indented member rows (the look of kableExtra::pack_rows / gt row groups).
+// Markdown pipe tables cannot express row groups, so call this from a raw
+// `{=typst}` block. It resets the report's zebra fill and draws its own navy
+// rules, so the grouped layout reads cleanly.
+//
+//   ```{=typst}
+//   #probity-grouped-table(
+//     columns: (auto, auto, auto, auto, auto, auto, auto),
+//     align: (left, right, right, right, right, right, right),
+//     header: ([], [mpg], [cyl], [disp], [hp], [drat], [wt]),
+//     ungrouped: (
+//       ([Mazda RX4], [21.0], [6], [160.0], [110], [3.90], [2.620]),
+//     ),
+//     groups: (
+//       (name: "Group 1", rows: (
+//         ([Valiant], [18.1], [6], [225.0], [105], [2.76], [3.460]),
+//       )),
+//     ),
+//   )
+//   ```
+//
+// header   — array of column-heading cells (bolded automatically); pass none to omit.
+// ungrouped — array of rows shown before the first group; each row is an array of cells.
+// groups   — array of (name: <str>, rows: <array of row-arrays>) dictionaries.
+#let probity-grouped-table(
+  columns: auto,
+  align: auto,
+  header: none,
+  ungrouped: (),
+  groups: (),
+  indent: 1.4em,
+) = {
+  // Column count, needed for the group label's colspan.
+  let ncols = if type(columns) == int { columns }
+    else if type(columns) == array { columns.len() }
+    else if header != none { header.len() }
+    else if ungrouped.len() > 0 { ungrouped.first().len() }
+    else if groups.len() > 0 and groups.first().rows.len() > 0 { groups.first().rows.first().len() }
+    else { 1 }
+
+  // Flatten ungrouped rows, then each group: a full-width bold label followed by
+  // its rows with the first cell indented.
+  let body = ()
+  for row in ungrouped { body += row }
+  for g in groups {
+    body.push(table.cell(colspan: ncols, inset: (top: 11pt, bottom: 4pt))[*#g.name*])
+    for row in g.rows {
+      body.push([#h(indent)#row.first()])
+      body += row.slice(1)
+    }
+  }
+
+  let head = if header != none {
+    (table.header(..header.map(strong)), table.hline(stroke: 0.6pt + probity-navy))
+  } else { () }
+
+  table(
+    columns: columns,
+    align: align,
+    stroke: none,
+    fill: none,
+    inset: (x: 8pt, y: 5pt),
+    table.hline(stroke: 1pt + probity-navy),
+    ..head,
+    ..body,
+    table.hline(stroke: 1pt + probity-navy),
+  )
 }
