@@ -7,9 +7,3 @@ build/
 
 /.quarto/
 **/*.quarto_ipynb
-
-# Beamer format-resources Quarto copies next to the document at render time
-# (sources of record live in _extensions/probity/)
-/probity-beamer.sty
-/logo_white.png
-/logo_navy_small.png

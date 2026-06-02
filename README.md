@@ -7,7 +7,6 @@ Calibri type, and Probity visual identity.
 |---|---|---|---|
 | `probity-typst` | A4 report | Typst (no LaTeX) | Written reports, methodology, deliverables |
 | `probity-slides-typst` | 16:9 slides | Typst (no LaTeX) | Client presentations, slide decks |
-| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Legacy — superseded by `probity-slides-typst` |
 
 The slide deck ships a card-component library (scenario cards, numbered
 steps, formula / result cards, metric rows, equation boxes) — see
@@ -66,27 +65,41 @@ subtitle: "A short descriptive subtitle"
 author: "Author Name, Role"
 date: today
 format: probity-slides-typst
-footer-text: "Optional centre-footer running title"
+footer-text: "Probity Data Analytics"        # footer brand, bold navy (left); omit → default
+footer-note: "Confidential"                  # classification after the brand; omit/empty to hide
+footer-center: "GRAP 104 forward-looking α"  # centre running title; omit → none
 lang: en-GB
 ---
 ```
 
+The footer keys are all optional:
+
+- `footer-text` — footer brand text, bold navy, at the foot left. Omit → the
+  default "Probity Data Analytics".
+- `footer-note` — optional muted classification shown after the brand (e.g.
+  "Confidential", "Draft", "Public"). Omit it (or set it empty) to show no
+  classification. Same behaviour as the report's `footer-note`.
+- `footer-center` — optional centre running title in the footer (e.g. the deck
+  topic, "GRAP 104 forward-looking α"). Omit → none.
+
+> **Renamed key.** `footer-center` was previously called `footer-text`, which
+> used to mean the centre running title. `footer-text` now means the footer
+> brand, so `footer-text` and `footer-note` mean the same thing in both the
+> report and the slides.
+
 > The format name is `probity-slides-typst` (the short `probity-slides`
-> does not resolve). The legacy Beamer deck is still available as
-> `format: probity-beamer` (starter `template-beamer.qmd`).
+> does not resolve).
 
 ## What's here
 
 | Path | Purpose |
 |---|---|
-| `_extensions/probity/` | Report + legacy Beamer extension |
+| `_extensions/probity/` | Report extension |
 | `_extensions/probity/typst-template.typ` | Typst template function (report) |
-| `_extensions/probity/probity-beamer.sty` | Legacy Beamer theme |
 | `_extensions/probity-slides/` | Typst slide-deck extension |
 | `_extensions/probity-slides/typst-template.typ` | Slide template + card-component library |
 | `template.qmd` | Starter report document |
 | `template-slides.qmd` | Starter slide deck (Typst) |
-| `template-beamer.qmd` | Starter slide deck (legacy Beamer) |
 | `SKILL.md` | Full guide: usage, brand rules, writing voice |
 | `install.sh` | Installs the report extension into another project |
 
@@ -113,8 +126,7 @@ Windows-safe); `--link` makes a relative symlink instead on Unix.
 cp -r _extensions/probity /path/to/target/project/_extensions/
 ```
 
-Then set `format: probity-typst` or `format: probity-beamer` in your
-document's front matter.
+Then set `format: probity-typst` in your document's front matter.
 
 ### Required directory structure
 
@@ -126,7 +138,7 @@ my-project/
   _quarto.yml              ← marks the project root
   _extensions/
     probity/
-  report.qmd               ← format: probity-typst  (or probity-beamer)
+  report.qmd               ← format: probity-typst
 ```
 
 A document in a **subdirectory** is trickier, for two independent reasons:
@@ -160,7 +172,7 @@ my-project/
     docs/
       _extensions/
         probity/             ← co-located copy, next to the document
-      report.qmd             ← format: probity-typst  (or probity-beamer)
+      report.qmd             ← format: probity-typst
 ```
 
 Use `--link` to symlink the co-located copy back to the project-root one instead
@@ -225,8 +237,9 @@ The Typst deck (`probity-slides-typst`) has **two authoring modes**:
    The brand colours (`probity-navy`, `probity-gold`, `probity-green`, …) and
    all helpers are in scope inside these blocks.
 
-Title slide, author and the centre-footer come from the YAML front matter
-(`title`, `subtitle`, `author`, `date`, `footer-text`).
+Title slide, author and the footer come from the YAML front matter
+(`title`, `subtitle`, `author`, `date`, `footer-text`, `footer-note`,
+`footer-center`).
 
 > **Keep one slide to one page.** There is no auto-fit: content that is taller
 > than the body silently spills onto the next page. Every card helper takes a
@@ -312,13 +325,6 @@ The full set of helpers — `prob-section`, `prob-navy-slide`,
 in `_extensions/probity-slides/typst-template.typ`. `template-slides.qmd` shows
 every one in context.
 
-### Legacy Beamer deck
-
-The previous XeLaTeX/Beamer theme is still available as `format: probity-beamer`
-(starter `template-beamer.qmd`); its section dividers use
-`## {.plain}` + `\ProbSectionContent{title}{subtitle}`. Prefer the Typst deck
-for new work.
-
 ## Troubleshooting
 
 ### `Unable to read the extension 'probity'`
@@ -345,22 +351,13 @@ project root. Co-locate the extension with the report:
 
 Or move the report up to the project root, beside `_extensions/`.
 
-### Beamer package not installed
-
-On first render, Quarto attempts to install `beamer.cls` automatically via
-TinyTeX. If auto-install is disabled, install it manually:
-
-```bash
-tlmgr install beamer
-```
-
 ### Font not found (Calibri / Carlito)
 
 **Report (`probity-typst`):** Calibri is a Microsoft font. On Linux the template
 falls back to Carlito, then Liberation Sans, then Arial.
 
-**Slides (`probity-beamer`):** the theme requires Carlito (the metric-compatible
-Calibri substitute). Install it:
+**Slides (`probity-slides-typst`):** the theme requires Carlito (the
+metric-compatible Calibri substitute). Install it:
 
 ```bash
 sudo apt-get install fonts-crosextra-carlito   # Debian / Ubuntu
@@ -370,12 +367,6 @@ sudo apt-get install fonts-crosextra-carlito   # Debian / Ubuntu
 
 Expected behaviour. The cover page intentionally has no running header or
 footer. They appear from page 2 onward.
-
-### Header missing on section divider slides
-
-Expected behaviour. Section divider slides use `{.plain}`, which suppresses the
-running header and footer via Beamer's built-in mechanism, leaving only the TikZ
-navy background.
 
 ## Modifying the templates
 
@@ -387,10 +378,10 @@ only edit it to expose additional variables.
 The template targets Typst 0.10 (bundled with Quarto 1.4) and avoids
 `context { }` blocks and `table.cell` selectors, which require Typst 0.11+.
 
-**Slides:** edit `_extensions/probity/probity-beamer.sty` (colour definitions,
-headline/footline templates, title page and section divider TikZ). Do **not**
-call `\setsansfont` inside the `.sty` — Quarto's `font-settings.latex` partial
-handles this via the `sansfont: Carlito` option in `_extension.yml`, and a
-double call causes a fontspec error.
+**Slides:** edit `_extensions/probity-slides/typst-template.typ` — brand
+constants, the `probity-slides()` page/chrome function, and the card helpers.
+Re-render `template-slides.qmd` to confirm. The `typst-show.typ` file wires
+front-matter variables into the template function; only edit it to expose
+additional variables.
 
 See `SKILL.md` for the full brand specification and Probity writing voice.

@@ -43,7 +43,9 @@
   subtitle: none,
   authors: (),
   date: none,
-  footer-text: none,
+  footer-text: [Probity Data Analytics],  // footer brand, bold navy (left)
+  footer-note: [],                         // optional classification after the brand; empty = hidden
+  footer-center: none,                     // optional running title (footer centre)
   lang: "en",
   doc,
 ) = {
@@ -59,8 +61,13 @@
         set text(size: 9pt, fill: probity-muted)
         grid(
           columns: (1fr, auto, 1fr),
-          text(weight: "bold", fill: probity-navy)[Probity Data Analytics],
-          if footer-text != none { footer-text } else { [] },
+          {
+            text(weight: "bold", fill: probity-navy)[#footer-text]
+            if footer-note != [] {
+              text(fill: probity-muted)[ · #footer-note]
+            }
+          },
+          if footer-center != none { footer-center } else { [] },
           align(right)[#counter(page).get().first()],
         )
       }
@@ -73,8 +80,8 @@
   // Each `##` starts a new white content slide. Quarto normalises the deck's
   // shallowest heading (`##`) to Typst level 1, so this rule targets level 1.
   // The frame title sits on the left with the logo on the right, both above a
-  // hairline — matching the Beamer headline. (Author convention: use `##` for
-  // every slide; do not use `#`, or the level normalisation shifts.)
+  // hairline. (Author convention: use `##` for every slide; do not use `#`,
+  // or the heading-level normalisation shifts.)
   show heading.where(level: 1): it => {
     pagebreak(weak: true)
     // Hairline is the block's bottom border so the gap to the title is exactly
