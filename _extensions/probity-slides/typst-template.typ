@@ -77,15 +77,20 @@
   // every slide; do not use `#`, or the level normalisation shifts.)
   show heading.where(level: 1): it => {
     pagebreak(weak: true)
-    grid(
-      columns: (1fr, auto),
-      align: (left + horizon, right + horizon),
-      text(size: 24pt, weight: "bold", fill: probity-navy)[#it.body],
-      image(_logo-navy, height: 0.9cm),
+    // Hairline is the block's bottom border so the gap to the title is exactly
+    // the bottom inset — no surprise block spacing.
+    block(
+      width: 100%,
+      below: 0.55cm,
+      inset: (bottom: 5pt),
+      stroke: (bottom: 0.4pt + probity-rule),
+      grid(
+        columns: (1fr, auto),
+        align: (left + horizon, right + horizon),
+        text(size: 24pt, weight: "bold", fill: probity-navy)[#it.body],
+        image(_logo-navy, height: 0.9cm),
+      ),
     )
-    v(6pt)
-    line(length: 100%, stroke: 0.4pt + probity-rule)
-    v(0.55cm)
   }
   // `###` (Typst level 2) becomes a slide subtitle line below the hairline.
   show heading.where(level: 2): it => {
@@ -150,19 +155,22 @@
 // ── Navy content slide: frame title (left) + white logo (right) + hairline,
 //    then `body` on navy. Header geometry matches the white content slides. ──
 #let prob-navy-slide(title, subtitle: none, foot: none, body) = _navy-canvas(foot: foot, top-inset: 0.85cm)[
-  #grid(
-    columns: (1fr, auto),
-    align: (left + horizon, right + horizon),
-    text(size: 24pt, weight: "bold", fill: white)[#title],
-    image(_logo-white, height: 0.9cm),
+  #block(
+    width: 100%,
+    below: if subtitle != none { 0.3cm } else { 0.55cm },
+    inset: (bottom: 5pt),
+    stroke: (bottom: 0.4pt + probity-light-blue.transparentize(35%)),
+    grid(
+      columns: (1fr, auto),
+      align: (left + horizon, right + horizon),
+      text(size: 24pt, weight: "bold", fill: white)[#title],
+      image(_logo-white, height: 0.9cm),
+    ),
   )
-  #v(6pt)
-  #line(length: 100%, stroke: 0.4pt + probity-light-blue.transparentize(35%))
   #if subtitle != none {
-    v(0.3cm)
     text(size: 13pt, fill: probity-light-blue)[#subtitle]
+    v(0.5cm)
   }
-  #v(0.5cm)
   #body
 ]
 
