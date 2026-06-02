@@ -18,6 +18,12 @@ $endif$
 $if(footer-text)$
   footer-text: [$footer-text$],
 $endif$
+$if(footer-note)$
+  footer-note: [$footer-note$],
+$endif$
+$if(footer-center)$
+  footer-center: [$footer-center$],
+$endif$
 $if(lang)$
   lang: "$lang$",
 $endif$

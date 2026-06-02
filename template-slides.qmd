@@ -4,7 +4,10 @@ subtitle: "GRAP 104 provisioning model"
 author: "Probity Data Analytics"
 date: today
 format: probity-slides-typst
-footer-text: "GRAP 104 forward-looking α"
+# Footer text (all optional):
+footer-text: "Probity Data Analytics"        # brand, bold navy (left); omit → default
+footer-note: "Confidential"                  # classification after the brand; remove this line to hide
+footer-center: "GRAP 104 forward-looking α"  # running title (footer centre); omit → none
 ---
 
 ## Agenda

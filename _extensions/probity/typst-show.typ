@@ -22,5 +22,14 @@ $endif$
 $if(lang)$
   lang: "$lang$",
 $endif$
+$if(header-text)$
+  header-text: [$header-text$],
+$endif$
+$if(footer-text)$
+  footer-text: [$footer-text$],
+$endif$
+$if(footer-note)$
+  footer-note: [$footer-note$],
+$endif$
   doc,
 )

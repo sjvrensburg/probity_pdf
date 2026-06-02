@@ -1,6 +1,6 @@
 ---
 name: probity-quarto
-description: "Create branded PDF outputs for Probity Data Analytics using the Quarto extension in this repository. Use this skill whenever the user asks to write, draft, restyle, or produce a Probity PDF report or slide deck from Quarto or Markdown: methodology write-ups, technical reports, audit-trail documents, memos, proposals, client deliverables, presentations, or anything that will leave the studio under the Probity name. Trigger it even when the user only says 'make a Probity report', 'use our PDF template', 'apply our branding', or attaches a Quarto/Markdown file to convert. Output is always a PDF file (not Word/docx). Formats: probity-typst (A4 report, no LaTeX) and probity-slides-typst (16:9 slides, no LaTeX, with a card-component library); probity-beamer is a legacy XeLaTeX slide deck superseded by probity-slides-typst. It pins down the navy/gold palette, Calibri type, Probity visual identity, and the Probity writing voice."
+description: "Create branded PDF outputs for Probity Data Analytics using the Quarto extension in this repository. Use this skill whenever the user asks to write, draft, restyle, or produce a Probity PDF report or slide deck from Quarto or Markdown: methodology write-ups, technical reports, audit-trail documents, memos, proposals, client deliverables, presentations, or anything that will leave the studio under the Probity name. Trigger it even when the user only says 'make a Probity report', 'use our PDF template', 'apply our branding', or attaches a Quarto/Markdown file to convert. Output is always a PDF file (not Word/docx). Formats: probity-typst (A4 report, no LaTeX) and probity-slides-typst (16:9 slides, no LaTeX, with a card-component library). It pins down the navy/gold palette, Calibri type, Probity visual identity, and the Probity writing voice."
 ---
 
 # Probity Data Analytics — Quarto PDF templates (agent guide)
@@ -12,7 +12,6 @@ through Quarto:
 |---|---|---|---|
 | `probity-typst` | A4 report | Typst — no LaTeX required | Written reports, methodology, deliverables |
 | `probity-slides-typst` | 16:9 slides | Typst — no LaTeX required | Client presentations, slide decks |
-| `probity-beamer` | 16:9 slides | XeLaTeX + Beamer | Legacy — superseded by `probity-slides-typst` |
 
 The extension lives at `/home/stefan/Documents/probity_pdf/` (the
 `probity_pdf` repository). When working in an external project, install it
@@ -112,6 +111,15 @@ abstract: |
 | `lang` | Document language; use `en-GB` for Probity | Recommended |
 | `abstract` | Pale-tint block with navy left border on cover | Recommended |
 | `toc` | `true` (default) shows a Contents page; set `false` to suppress | Optional |
+| `header-text` | Running-header text right of the logo (omit → default "Data Analytics") | Optional |
+| `footer-text` | Bold navy brand text at the foot, left (omit → default "Probity Data Analytics") | Optional |
+| `footer-note` | Muted classification after the footer brand — e.g. "Confidential", "Draft", "Public". **Omit (or leave empty) to show no note.** The starter sets "Confidential". | Optional |
+
+The running header/footer appear from page 2 onward (not the cover).
+`header-text` and `footer-text` are brand defaults — omit to keep them.
+`footer-note` is optional: set it to show a classification, omit it (or set it
+empty) to show none. Special characters and dashes render correctly (the values
+are passed as content).
 
 **Slide deck front matter** (`format: probity-slides-typst`):
 
@@ -122,7 +130,9 @@ subtitle: "A short descriptive subtitle"
 author: "Author Name, Role"
 date: today
 format: probity-slides-typst
-footer-text: "Optional centre-footer running title"
+footer-text: "Probity Data Analytics"        # footer brand, bold navy (left); omit → default
+footer-note: "Confidential"                  # classification after the brand; omit/empty to hide
+footer-center: "GRAP 104 forward-looking α"  # centre running title; omit → none
 lang: en-GB
 ---
 ```
@@ -133,18 +143,21 @@ lang: en-GB
 | `subtitle` | Gold subtitle below title on the title slide | Recommended |
 | `author` | Light-blue author line near the bottom of the title slide | Recommended |
 | `date` | Appended to author, separated by a pipe | Recommended |
-| `footer-text` | Centre-footer running title on content slides | Optional |
+| `footer-text` | Footer brand, bold navy (left); omit → default "Probity Data Analytics" | Optional |
+| `footer-note` | Muted classification after the footer brand (e.g. "Draft", "Public"); omit/empty to hide | Optional |
+| `footer-center` | Centre-footer running title on content slides; omit → none | Optional |
 | `format` | Must be `probity-slides-typst` (the short `probity-slides` does not resolve) | Yes |
 | `lang` | Document language; use `en-GB` for Probity | Recommended |
 
 The slide deck is a **dependency-free, page-based Typst** format (no Touying).
-The legacy XeLaTeX deck is still available as `format: probity-beamer`
-(starter `template-beamer.qmd`) but should not be used for new work.
+`footer-text` / `footer-note` mean the same as in the report (`footer-note`
+hides when omitted/empty); `footer-center` is the slide-only centre running
+title — renamed from the slide deck's previous `footer-text`.
 
 **Slide authoring — two modes:**
 
 1. **Plain slides** — a `## Heading` starts a new white content slide (frame
-   title left, logo right, above a hairline — matching Beamer); write normal
+   title left, logo right, above a hairline); write normal
    Markdown beneath it (bullets, numbered lists, text, `###` subtitle). Use
    `##` for every slide; do **not** add a `#` (level-1) heading — Quarto
    normalises the shallowest level to Typst level 1 and a stray `#` shifts it,
@@ -318,7 +331,6 @@ Apply every rule to every word in a Probity document.
 | Mono / code | Consolas (Courier New → Liberation Mono fallback) |
 | Report format | `probity-typst` — PDF via Typst, no LaTeX required; page size A4 |
 | Slides format | `probity-slides-typst` — PDF via Typst, 16:9; card-component library |
-| Legacy slides | `probity-beamer` — XeLaTeX + Beamer; superseded, do not use for new work |
 
 ---
 
@@ -342,10 +354,6 @@ when the extension is installed at the project root. Co-locate it:
 A front-matter field value contains characters that break the Typst template.
 Check for unescaped special characters in `title`, `subtitle`, `author`, or
 `abstract`.
-
-**Beamer package not installed**
-On first render, Quarto attempts to install `beamer.cls` automatically via
-TinyTeX. If that fails: `tlmgr install beamer`.
 
 **Font not found (Calibri / Carlito)**
 On Linux without Microsoft fonts, the report template falls back to Carlito,
@@ -378,22 +386,16 @@ Re-render `template-slides.qmd` and inspect with `pdftoppm -r 110`. Page-aware
 content uses `context { ... }` (Typst 0.11+); the old `locate(loc => ...)` form
 was removed after Typst 0.10 and must not be reintroduced.
 
-**Legacy Beamer slides:** edit `_extensions/probity/probity-beamer.sty`. Do
-**not** call `\setsansfont` inside it (Quarto handles fonts via `sansfont:`).
-Kept for back-compatibility; prefer the Typst deck for new work.
-
 ---
 
 ## Files in this repository
 
 - `_extensions/probity/typst-template.typ` — Typst template function (report) + `probity-grouped-table` helper
 - `_extensions/probity/typst-show.typ` — Pandoc partial wiring front matter (report)
-- `_extensions/probity/probity-beamer.sty` — legacy Beamer theme
 - `_extensions/probity-slides/typst-template.typ` — Typst slide template + card-component library
 - `_extensions/probity-slides/typst-show.typ` — Pandoc partial wiring front matter (slides)
 - `_extensions/probity-slides/assets/` — slide-deck copy of the logos
 - `_extensions/probity/assets/logo_trim.png` — report cover wordmark
 - `template.qmd` — starter report document
 - `template-slides.qmd` — starter slide deck (Typst)
-- `template-beamer.qmd` — starter slide deck (legacy Beamer)
 - `install.sh` — installs the report extension into another project
