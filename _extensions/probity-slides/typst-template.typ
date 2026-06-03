@@ -203,18 +203,21 @@
 
 // ── Metric card row on a navy slide: gold bar + gold label + white value ──
 // cards: array of (label, value, desc)
-#let prob-metric-cards(cards, height: 4.9cm) = grid(
+#let prob-metric-cards(cards, height: 4.9cm, label-height: 0.92cm) = grid(
   columns: (1fr,) * cards.len(),
   gutter: 14pt,
+  // Top-aligned with a fixed-height label zone so the big values (and the
+  // descriptions) line up across cards regardless of label wrap or description
+  // length. Slack falls to the bottom of each card. (Previously `v(1fr)` centred
+  // each card independently, so values drifted with the description length.)
   ..cards.map(c => rect(
     width: 100%, height: height, fill: none,
     stroke: (rest: 0.6pt + probity-light-blue.transparentize(45%), left: 3pt + probity-gold),
     inset: (left: 16pt, top: 14pt, right: 14pt, bottom: 12pt),
   )[
-    #_eyebrow(c.label, fill: probity-gold)
-    #v(1fr)
+    #block(height: label-height, _eyebrow(c.label, fill: probity-gold))
     #text(size: 27pt, weight: "bold", fill: white)[#c.value]
-    #v(1fr)
+    #v(0.34cm)
     #text(size: 11pt, fill: probity-light-blue)[#c.desc]
   ]),
 )
