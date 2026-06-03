@@ -221,23 +221,27 @@
 
 // ── Numbered steps (left column of a process slide) ──
 // steps: array of (title, body)
-#let prob-steps(steps, gap: 0.4cm) = {
+#let prob-steps(steps, gap: 0.5cm) = {
   set text(size: 13pt)
   grid(
     rows: (auto,) * steps.len(),
     row-gutter: gap,
+    // Each step is a 2x2 grid:
+    //   row 1: number badge + title, vertically centred against each other
+    //   row 2: empty under the badge, body hanging-indented under the title
+    // (Previously the badge was horizon-centred against title+body together, so on
+    //  multi-line steps it drifted to the middle instead of sitting with the title.)
     ..steps.enumerate().map(((i, s)) => grid(
       columns: (1.0cm, 1fr),
-      column-gutter: 0.45cm,
-      align: (center + horizon, left + top),
-      circle(radius: 0.5cm, fill: probity-navy)[
+      column-gutter: 0.5cm,
+      row-gutter: 5pt,
+      grid.cell(align: center + horizon, circle(radius: 0.5cm, fill: probity-navy)[
         #align(center + horizon, text(fill: white, weight: "bold", size: 15pt)[#(i + 1)])
-      ],
-      [
-        #text(weight: "bold", fill: probity-navy, size: 15pt)[#s.title]
-        #v(2pt)
-        #text(fill: probity-body)[#s.body]
-      ],
+      ]),
+      grid.cell(align: left + horizon,
+        text(weight: "bold", fill: probity-navy, size: 15pt)[#s.title]),
+      [],
+      text(fill: probity-body)[#s.body],
     )),
   )
 }
