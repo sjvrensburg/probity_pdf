@@ -183,20 +183,27 @@
 
 // ── Scenario card row (white slide): accent bar + label + meta + value + desc ──
 // cards: array of (accent, label, meta, value, desc)
-#let prob-scenario-cards(cards, height: 8.3cm) = grid(
+#let prob-scenario-cards(cards, height: 8.3cm, header-height: 1.5cm) = grid(
   columns: (1fr,) * cards.len(),
   gutter: 12pt,
+  // Top-aligned with a fixed-height header zone (label + meta) so the big values
+  // line up across cards. `set block(spacing: 0pt)` removes the inherited
+  // paragraph spacing (sized off the body font) that would otherwise inflate the
+  // content height; gaps are set explicitly with v(). Slack falls to the bottom.
+  // (Previously `v(1fr)` centred each card independently, so the values drifted.)
   ..cards.map(c => rect(
     width: 100%, height: height, fill: white,
     stroke: (rest: 0.6pt + probity-rule, left: 3pt + c.accent),
     inset: (left: 16pt, top: 16pt, right: 14pt, bottom: 14pt),
   )[
-    #_eyebrow(c.label, fill: c.accent)
-    #v(11pt)
-    #text(size: 11pt, fill: probity-muted)[#c.meta]
-    #v(1fr)
+    #set block(spacing: 0pt)
+    #block(height: header-height)[
+      #_eyebrow(c.label, fill: c.accent)
+      #v(7pt)
+      #text(size: 11pt, fill: probity-muted)[#c.meta]
+    ]
     #text(size: 32pt, weight: "bold", fill: probity-navy)[#c.value]
-    #v(1fr)
+    #v(0.4cm)
     #text(size: 12pt)[#c.desc]
   ]),
 )
@@ -215,6 +222,10 @@
     stroke: (rest: 0.6pt + probity-light-blue.transparentize(45%), left: 3pt + probity-gold),
     inset: (left: 16pt, top: 14pt, right: 14pt, bottom: 12pt),
   )[
+    // `set block(spacing: 0pt)` removes the inherited paragraph spacing (sized off
+    // the body font) that would otherwise inflate the content height and spill the
+    // description below the card; gaps are set explicitly with v().
+    #set block(spacing: 0pt)
     #block(height: label-height, _eyebrow(c.label, fill: probity-gold))
     #text(size: 27pt, weight: "bold", fill: white)[#c.value]
     #v(0.34cm)
