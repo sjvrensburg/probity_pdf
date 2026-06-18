@@ -183,7 +183,9 @@
 
 // ── Scenario card row (white slide): accent bar + label + meta + value + desc ──
 // cards: array of (accent, label, meta, value, desc)
-#let prob-scenario-cards(cards, height: 8.3cm) = grid(
+// header-height is a fixed zone (label+meta) so values line up across cards.
+// Keep value text short enough to stay on one line; descriptions then align too.
+#let prob-scenario-cards(cards, height: 8.3cm, header-height: 1.5cm) = grid(
   columns: (1fr,) * cards.len(),
   gutter: 12pt,
   ..cards.map(c => rect(
@@ -191,53 +193,65 @@
     stroke: (rest: 0.6pt + probity-rule, left: 3pt + c.accent),
     inset: (left: 16pt, top: 16pt, right: 14pt, bottom: 14pt),
   )[
-    #_eyebrow(c.label, fill: c.accent)
-    #v(11pt)
-    #text(size: 11pt, fill: probity-muted)[#c.meta]
-    #v(1fr)
+    #set block(spacing: 0pt)
+    #block(height: header-height)[
+      #_eyebrow(c.label, fill: c.accent)
+      #v(7pt)
+      #text(size: 11pt, fill: probity-muted)[#c.meta]
+    ]
+    #v(0.35cm)
     #text(size: 32pt, weight: "bold", fill: probity-navy)[#c.value]
-    #v(1fr)
+    #v(0.4cm)
     #text(size: 12pt)[#c.desc]
   ]),
 )
 
 // ── Metric card row on a navy slide: gold bar + gold label + white value ──
 // cards: array of (label, value, desc)
-#let prob-metric-cards(cards, height: 4.9cm) = grid(
+#let prob-metric-cards(cards, height: 4.9cm, label-height: 0.92cm) = grid(
   columns: (1fr,) * cards.len(),
   gutter: 14pt,
+  // Top-aligned with a fixed-height label zone so the big values (and the
+  // descriptions) line up across cards regardless of label wrap or description
+  // length. Slack falls to the bottom of each card. (Previously `v(1fr)` centred
+  // each card independently, so values drifted with the description length.)
   ..cards.map(c => rect(
     width: 100%, height: height, fill: none,
     stroke: (rest: 0.6pt + probity-light-blue.transparentize(45%), left: 3pt + probity-gold),
     inset: (left: 16pt, top: 14pt, right: 14pt, bottom: 12pt),
   )[
-    #_eyebrow(c.label, fill: probity-gold)
-    #v(1fr)
+    // Kill the inherited paragraph/block spacing (sized off the 17pt body) and
+    // control the gaps explicitly with v(); otherwise it silently inflates the
+    // content height and the description spills below the card.
+    #set block(spacing: 0pt)
+    #block(height: label-height, _eyebrow(c.label, fill: probity-gold))
     #text(size: 27pt, weight: "bold", fill: white)[#c.value]
-    #v(1fr)
+    #v(0.34cm)
     #text(size: 11pt, fill: probity-light-blue)[#c.desc]
   ]),
 )
 
 // ── Numbered steps (left column of a process slide) ──
 // steps: array of (title, body)
-#let prob-steps(steps, gap: 0.4cm) = {
+#let prob-steps(steps, gap: 0.5cm) = {
   set text(size: 13pt)
   grid(
     rows: (auto,) * steps.len(),
     row-gutter: gap,
+    // Each step is a 2x2 grid:
+    //   row 1: number badge + title, vertically centred against each other
+    //   row 2: empty under the badge, body hanging-indented under the title
     ..steps.enumerate().map(((i, s)) => grid(
       columns: (1.0cm, 1fr),
-      column-gutter: 0.45cm,
-      align: (center + horizon, left + top),
-      circle(radius: 0.5cm, fill: probity-navy)[
+      column-gutter: 0.5cm,
+      row-gutter: 5pt,
+      grid.cell(align: center + horizon, circle(radius: 0.5cm, fill: probity-navy)[
         #align(center + horizon, text(fill: white, weight: "bold", size: 15pt)[#(i + 1)])
-      ],
-      [
-        #text(weight: "bold", fill: probity-navy, size: 15pt)[#s.title]
-        #v(2pt)
-        #text(fill: probity-body)[#s.body]
-      ],
+      ]),
+      grid.cell(align: left + horizon,
+        text(weight: "bold", fill: probity-navy, size: 15pt)[#s.title]),
+      [],
+      text(fill: probity-body)[#s.body],
     )),
   )
 }

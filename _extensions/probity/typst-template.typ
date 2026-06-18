@@ -140,7 +140,7 @@
   show quote: it => {
     block(
       width: 100%,
-      inset: (left: 24pt, right: 0pt, y: 8pt),
+      inset: (left: 24pt, right: 20pt, y: 8pt),
       stroke: (left: 3pt + probity-mid-blue),
       fill: probity-pale-tint,
       text(fill: probity-body, style: "italic")[#it.body],
