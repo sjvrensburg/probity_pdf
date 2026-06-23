@@ -48,6 +48,17 @@ A figure with a caption:
 > A blockquote, useful for the honesty pattern: state the headline finding,
 > then state what it depends on.
 
+A formal "Key finding" callout (`prob-callout`) — upright body, navy accent bar,
+optional tracked eyebrow label. Use it where the blockquote's italic register is
+too soft:
+
+```{=typst}
+#prob-callout(label: "Key finding")[
+  A single signal — the prior year's inflation-growth gap — explains almost all
+  of the year-to-year movement in the loss rate ($R^2 = 0.97$).
+]
+```
+
 Inline `code` and a fenced block:
 
 ```python

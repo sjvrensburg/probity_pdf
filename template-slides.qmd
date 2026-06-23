@@ -105,3 +105,43 @@ Four illustrative macro states. The neutral band holds α at 1 around the baseli
   ratio: (1.35fr, 1fr),
 )
 ```
+
+## Indicator Selection
+
+A branded data table (`prob-data-table`) — navy header, pale-tint zebra rows, horizon-aligned cells. Body cells are raw content, so the status column can carry colour.
+
+```{=typst}
+#prob-data-table(
+  columns: (1fr, auto, 2.4fr),
+  align: (left + horizon, center + horizon, left + horizon),
+  header: ([Indicator], [Keep], [Rationale]),
+  rows: (
+    ([Inflation-growth gap, lagged one year], text(fill: probity-green, weight: "bold")[✓], [Single best predictor of loss-rate movement.]),
+    ([Unemployment rate],                    text(fill: probity-red,   weight: "bold")[✗], [Adds noise; fails out-of-sample.]),
+    ([Credit-GDP gap],                       text(fill: probity-gold,  weight: "bold")[~], [Marginally useful; folded into the gap.]),
+  ),
+)
+```
+
+## Auditor Questions
+
+A Q&A block (`prob-qa`) stacks bold-navy questions over body answers.
+
+```{=typst}
+#prob-qa((
+  ([Is α forward-looking as GRAP 104 §5.32 requires?], [Yes. It depends only on the prior year's published macro series, available before year-end.]),
+  ([Could α move the matrix the wrong way?],            [Only outside the [0.85, 1.45] clip; inside the neutral band α is held at 1.]),
+))
+```
+
+## Pipeline
+
+A horizontal flow diagram (`prob-flow`) alternates pale-tint and navy boxes joined by gold arrows.
+
+```{=typst}
+#prob-flow((
+  (title: [Inputs],  body: [SARB GDP, Stats SA CPI for the year just ended.]),
+  (title: [Engine],  body: [Compute the inflation-growth gap and apply α.]),
+  (title: [Outputs], body: [Every cell of the provision matrix, scaled by α.]),
+))
+```
