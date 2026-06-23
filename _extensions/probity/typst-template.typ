@@ -270,3 +270,23 @@
     table.hline(stroke: 1pt + probity-navy),
   )
 }
+
+// ── Callout box: pale-tint block with a coloured accent bar ───────────────
+// Use for the formal "Key finding" / "Bottom line" / "Note" callout via a raw
+// `{=typst}` block. The optional `label` renders as a tracked uppercase eyebrow
+// above an upright body. (The markdown blockquote remains for softer asides —
+// it renders italicised with a mid-blue bar via the show rule above.)
+//
+//   #prob-callout(label: "Key finding")[A single signal explains …]
+#let prob-callout(body, label: none, accent: probity-navy) = block(
+  width: 100%,
+  inset: (left: 16pt, right: 14pt, top: 10pt, bottom: 10pt),
+  stroke: (left: 3pt + accent),
+  fill: probity-pale-tint,
+)[
+  #if label != none {
+    text(size: 9pt, tracking: 0.08em, weight: "bold", fill: accent)[#upper(label)]
+    v(3pt)
+  }
+  #text(fill: probity-body)[#body]
+]

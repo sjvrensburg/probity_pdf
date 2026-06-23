@@ -178,14 +178,23 @@ examples in `template-slides.qmd` and README → "Authoring slides"):
 | `prob-section(title, subtitle:)` | Full-navy section divider |
 | `prob-navy-slide(title, subtitle:)[…]` | Navy content slide (hosts equation box + metric cards) |
 | `prob-image-slide(path, fit:)` | Full-bleed image slide (16:9, no margins/title/footer) |
-| `prob-scenario-cards((…))` | Row of accent-bar cards on a white slide |
-| `prob-metric-cards((…))` | Row of gold-bar metric cards on a navy slide |
+| `prob-scenario-cards((…))` | Row of accent-bar cards on a white slide (values align via `header-height:`) |
+| `prob-metric-cards((…))` | Row of gold-bar metric cards on a navy slide (values align via `label-height:`) |
 | `prob-steps((…))` | Numbered-circle process list |
 | `prob-formula-card((…), …)` | Navy card of aligned `name = expr` mono lines |
 | `prob-result-card(value, …)` | Pale-tint card with a big headline value |
 | `prob-equation-box[…]` | Gold-bordered centred equation |
 | `prob-cols(left, right, ratio:)` | Two columns (Quarto `.columns` does NOT work in Typst) |
+| `prob-data-table(columns:, header:, rows:, align:)` | Branded table: navy header + pale-tint zebra rows |
+| `prob-qa((…))` | Stacked bold-navy question / body-answer blocks |
+| `prob-flow((…))` | Horizontal row of boxes (pale/navy) joined by gold arrows |
 | `prob-measure(content, max-height:)` | Wrap slide content to detect overflow during editing (shows red warning) |
+
+In the **report** (`probity-typst`), the extra helpers are `probity-grouped-table(…)`
+(row-grouped tables — see README → "Grouped tables") and `prob-callout(body, label:,
+accent:)` — a pale-tint block with a coloured accent bar and an optional tracked
+uppercase eyebrow, for the formal "Key finding" / "Bottom line" callout (distinct
+from the italic markdown blockquote, which renders a softer mid-blue-bar aside).
 
 **One-page rule:** there is no auto-fit — content taller than the body spills
 silently onto the next page. To detect overflow during editing, wrap your slide

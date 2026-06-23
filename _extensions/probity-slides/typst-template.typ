@@ -206,7 +206,9 @@
 
 // ── Scenario card row (white slide): accent bar + label + meta + value + desc ──
 // cards: array of (accent, label, meta, value, desc)
-#let prob-scenario-cards(cards, height: 8.3cm) = grid(
+// header-height is a fixed zone (label+meta) so values line up across cards.
+// Keep value text short enough to stay on one line; descriptions then align too.
+#let prob-scenario-cards(cards, height: 8.3cm, header-height: 1.5cm) = grid(
   columns: (1fr,) * cards.len(),
   gutter: 12pt,
   ..cards.map(c => rect(
@@ -214,19 +216,26 @@
     stroke: (rest: 0.6pt + probity-rule, left: 3pt + c.accent),
     inset: (left: 16pt, top: 16pt, right: 14pt, bottom: 14pt),
   )[
-    #_eyebrow(c.label, fill: c.accent)
-    #v(11pt)
-    #text(size: 11pt, fill: probity-muted)[#c.meta]
-    #v(1fr)
+    #set block(spacing: 0pt)
+    #block(height: header-height)[
+      #_eyebrow(c.label, fill: c.accent)
+      #v(7pt)
+      #text(size: 11pt, fill: probity-muted)[#c.meta]
+    ]
+    #v(0.35cm)
     #text(size: 32pt, weight: "bold", fill: probity-navy)[#c.value]
-    #v(1fr)
+    #v(0.4cm)
     #text(size: 12pt)[#c.desc]
   ]),
 )
 
 // ── Metric card row on a navy slide: gold bar + gold label + white value ──
 // cards: array of (label, value, desc)
-#let prob-metric-cards(cards, height: 4.9cm) = grid(
+// Top-aligned with a fixed-height label zone so the big values (and the
+// descriptions) line up across cards regardless of label wrap or description
+// length. Slack falls to the bottom of each card. (Previously `v(1fr)` centred
+// each card independently, so values drifted with the description length.)
+#let prob-metric-cards(cards, height: 4.9cm, label-height: 0.92cm) = grid(
   columns: (1fr,) * cards.len(),
   gutter: 14pt,
   ..cards.map(c => rect(
@@ -234,33 +243,38 @@
     stroke: (rest: 0.6pt + probity-light-blue.transparentize(45%), left: 3pt + probity-gold),
     inset: (left: 16pt, top: 14pt, right: 14pt, bottom: 12pt),
   )[
-    #_eyebrow(c.label, fill: probity-gold)
-    #v(1fr)
+    // Kill the inherited paragraph/block spacing (sized off the 17pt body) and
+    // control the gaps explicitly with v(); otherwise it silently inflates the
+    // content height and the description spills below the card.
+    #set block(spacing: 0pt)
+    #block(height: label-height, _eyebrow(c.label, fill: probity-gold))
     #text(size: 27pt, weight: "bold", fill: white)[#c.value]
-    #v(1fr)
+    #v(0.34cm)
     #text(size: 11pt, fill: probity-light-blue)[#c.desc]
   ]),
 )
 
 // ── Numbered steps (left column of a process slide) ──
 // steps: array of (title, body)
-#let prob-steps(steps, gap: 0.4cm) = {
+#let prob-steps(steps, gap: 0.5cm) = {
   set text(size: 13pt)
   grid(
     rows: (auto,) * steps.len(),
     row-gutter: gap,
+    // Each step is a 2x2 grid:
+    //   row 1: number badge + title, vertically centred against each other
+    //   row 2: empty under the badge, body hanging-indented under the title
     ..steps.enumerate().map(((i, s)) => grid(
       columns: (1.0cm, 1fr),
-      column-gutter: 0.45cm,
-      align: (center + horizon, left + top),
-      circle(radius: 0.5cm, fill: probity-navy)[
+      column-gutter: 0.5cm,
+      row-gutter: 5pt,
+      grid.cell(align: center + horizon, circle(radius: 0.5cm, fill: probity-navy)[
         #align(center + horizon, text(fill: white, weight: "bold", size: 15pt)[#(i + 1)])
-      ],
-      [
-        #text(weight: "bold", fill: probity-navy, size: 15pt)[#s.title]
-        #v(2pt)
-        #text(fill: probity-body)[#s.body]
-      ],
+      ]),
+      grid.cell(align: left + horizon,
+        text(weight: "bold", fill: probity-navy, size: 15pt)[#s.title]),
+      [],
+      text(fill: probity-body)[#s.body],
     )),
   )
 }
@@ -343,3 +357,66 @@
 )[
   #image(image-path, width: 100%, height: 100%, fit: fit)
 ]
+
+// ── Branded data table (white slide): navy header + pale-tint zebra rows ──
+// Encapsulates the table styling repeated across data slides. Body cells are
+// passed as raw content, so an individual cell can be styled (e.g. a gold value).
+//
+//   columns: array of column specs, e.g. (auto, auto, 1fr)
+//   header:  array of content cells for the header row (auto-white-bold)
+//   rows:    array of rows; each row is an array of content cells
+//   align:   optional array of per-column alignments (default left + horizon)
+#let prob-data-table(columns: (), header: (), rows: (), align: auto, inset: (x: 11pt, y: 7pt)) = {
+  let col-align = if align == auto { (left + horizon,) * columns.len() } else { align }
+  table(
+    columns: columns,
+    align: col-align,
+    stroke: none,
+    fill: (_, y) => if y == 0 { probity-navy } else if calc.odd(y) { probity-pale-tint } else { white },
+    inset: inset,
+    table.header(..header.map(h => text(fill: white, weight: "bold")[#h])),
+    ..rows.flatten(),
+  )
+}
+
+// ── Q&A block (white slide): bold navy question + body answer ──
+// pairs: array of (q, a). Renders as a stacked list; each block is unbreakable
+// so a question never splits across a page boundary. `.join()` collapses the
+// mapped array into a single content value (a returned array would render as
+// its repr rather than as stacked blocks).
+#let prob-qa(pairs, gap: 0.5cm) = {
+  pairs.map(((q, a)) => block(below: gap, breakable: false, width: 100%)[
+    #text(fill: probity-navy, weight: "bold", size: 15pt)[#q]
+    #v(0.1cm)
+    #text(size: 13.5pt, fill: probity-body)[#a]
+  ]).join()
+}
+
+// ── Horizontal flow diagram (white slide): labelled boxes joined by gold arrows ──
+// steps: array of (title:, body:). Boxes alternate pale-tint (first) and navy
+// (second), matching the Inputs → Engine → Outputs convention.
+#let prob-flow(steps, box-width: 6.2cm) = {
+  let cells = ()
+  for (i, s) in steps.enumerate() {
+    let dark = calc.odd(i)
+    let bg = if dark { probity-navy } else { probity-pale-tint }
+    let title-col = if dark { white } else { probity-navy }
+    let body-col = if dark { probity-light-blue } else { probity-body }
+    let stroke = if dark { none } else { 0.5pt + probity-light-blue }
+    cells.push(box(
+      fill: bg, inset: 14pt, radius: 8pt, width: box-width, stroke: stroke,
+    )[
+      #text(weight: "bold", size: 13pt, fill: title-col)[#s.title]
+      #linebreak()
+      #text(size: 11pt, fill: body-col)[#s.body]
+    ])
+    if i < steps.len() - 1 {
+      cells.push(text(size: 26pt, fill: probity-gold)[#sym.arrow.r])
+    }
+  }
+  grid(
+    columns: (auto,) * cells.len(),
+    column-gutter: 12pt, align: horizon,
+    ..cells,
+  )
+}

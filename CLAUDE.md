@@ -35,7 +35,7 @@ The extension lives in two directories: `_extensions/probity/` (report) and `_ex
 ### Report format (`probity-typst`)
 
 - `_extension.yml` — registers both formats; `typst:` section sets TOC depth, caption locations.
-- `typst-template.typ` — pure Typst file defining `probity-report(...)`. Contains brand constants, page geometry, running header/footer, title page, and show rules. Also defines the `probity-grouped-table(...)` helper for row-grouped tables (callable from raw `{=typst}` blocks; markdown pipe tables can't express row groups). See README → "Grouped tables".
+- `typst-template.typ` — pure Typst file defining `probity-report(...)`. Contains brand constants, page geometry, running header/footer, title page, and show rules. Also defines the `probity-grouped-table(...)` helper for row-grouped tables (callable from raw `{=typst}` blocks; markdown pipe tables can't express row groups — see README → "Grouped tables") and `prob-callout(body, label:, accent:)` for branded key-finding callouts.
 - `typst-show.typ` — Pandoc partial wiring front-matter into `probity-report(...)`. Passes `authors` straight through to `document.author` (an empty array means no author — do not `.join()` it, an empty join yields `none` and fails compilation). Also wires the optional `header-text` / `footer-text` / `footer-note` keys (running header/footer text). Pass these as **content** (`[$footer-note$]`), not strings — Pandoc encodes em dashes etc. as Typst markup (`---`), which only converts inside content, not a string literal. Defaults live in the `probity-report` signature and are kept via `$if$` (omitted key → signature default). `header-text`/`footer-text` default to the brand text. `footer-note` defaults to `[]` (empty) and is rendered only when `footer-note != []`, so **omitting it hides the classification** — the starter `template.qmd` sets `Confidential`. (Pandoc also trims whitespace-only values to empty, so `footer-note: ""` hides it too.)
 
 ### Slide format (`probity-slides-typst`)
@@ -52,9 +52,13 @@ Dependency-free, **page-based** Typst slides (no Touying/polylux). Lives in `_ex
 
 **Authoring model (two modes):**
 - Plain text/bullet slide → `## Title` + markdown. The heading show-rule renders the slide.
-- Any slide with cards, navy background, or full-bleed image → a raw ` ```{=typst} ` block calling a helper (`prob-section`, `prob-navy-slide`, `prob-image-slide`, `prob-scenario-cards`, `prob-steps`, `prob-formula-card`, `prob-result-card`, `prob-metric-cards`, `prob-equation-box`, `prob-cols`, `prob-measure`). These give a hard one-page boundary and `v(1fr)` space-between layout.
+- Any slide with cards, navy background, or full-bleed image → a raw ` ```{=typst} ` block calling a helper (`prob-section`, `prob-navy-slide`, `prob-image-slide`, `prob-scenario-cards`, `prob-steps`, `prob-formula-card`, `prob-result-card`, `prob-metric-cards`, `prob-equation-box`, `prob-cols`, `prob-data-table`, `prob-qa`, `prob-flow`, `prob-measure`). These give a hard one-page boundary and `v(1fr)` space-between layout.
 
 **One-page caveat:** there is no auto-fit. Content slides flow; if a component is taller than the ~13.2 cm body it silently spills onto the next page. To detect overflow during editing, wrap content in `prob-measure([ ... ])`, which displays a red warning box if content exceeds the safe height. Card helpers take a `height:` parameter and ship with conservative defaults sized to fit. `height: 100%` inside an auto grid row resolves against the *page* (not the sibling column) and overflows — pass an explicit `cm` height to balance two-column slides instead. Quarto's native `::: {.columns}` does **not** produce side-by-side layout in Typst output; use the `prob-cols(left, right, ratio:)` helper.
+
+**Card alignment:** `prob-scenario-cards` and `prob-metric-cards` use a fixed-height header/label zone (`header-height:` / `label-height:` params) so the big values and descriptions line up across cards regardless of label wrap or description length — they do **not** use `v(1fr)` centring (which let values drift). Both helpers call `set block(spacing: 0pt)` to suppress inherited paragraph spacing that would otherwise inflate the card and spill the description.
+
+**Report callouts:** the report ships `prob-callout(body, label:, accent:)` — a pale-tint block with a coloured accent bar and optional tracked uppercase eyebrow, for the formal "Key finding" / "Bottom line" callout. The markdown blockquote is the softer register (italic body, mid-blue bar) for the honesty-pattern aside.
 
 **Bold text on navy backgrounds (issue #6):** Bold text (`*word*` or `**text**`) on navy-background slides (title slide, `prob-section`, `prob-navy-slide`) now renders in white for visibility. The global show rule for `strong` is overridden within `_navy-canvas` so navy-on-navy is avoided.
 
@@ -95,6 +99,8 @@ Both are fixed by co-locating the extension with the report: `install.sh <projec
 | Body text | `#1F2937` |
 | Muted text | `#6B7280` |
 | Rule / hairline | `#D5DEE9` |
+
+Slides-only semantic accents (not in the report): `probity-green` (`#2E7D46`, positive) and `probity-red` (`#B23A3A`, negative), passed as the `accent:` field of `prob-scenario-cards` rows.
 
 Primary font: Calibri (Carlito → Liberation Sans → Arial fallback). Mono: Consolas.
 
