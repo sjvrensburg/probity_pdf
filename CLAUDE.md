@@ -8,6 +8,7 @@ Branded Quarto formats for Probity Data Analytics — both output via Typst, no 
 
 - **`probity-typst`** — A4 report (cover page, TOC, running header/footer). Extension dir `_extensions/probity/`.
 - **`probity-slides-typst`** — 16:9 slide deck (navy/gold, Carlito) with a card-component library. Extension dir `_extensions/probity-slides/`.
+- **`probity-invoice-typst`** — A4 single-page branded invoice (navy/gold, Carlito), **entirely YAML front-matter driven**. Extension dir `_extensions/probity-invoice/`.
 
 (A legacy XeLaTeX `probity-beamer` deck was removed in v2.0.0 — see git history if ever needed.)
 
@@ -63,6 +64,16 @@ Dependency-free, **page-based** Typst slides (no Touying/polylux). Lives in `_ex
 **Bold text on navy backgrounds (issue #6):** Bold text (`*word*` or `**text**`) on navy-background slides (title slide, `prob-section`, `prob-navy-slide`) now renders in white for visibility. The global show rule for `strong` is overridden within `_navy-canvas` so navy-on-navy is avoided.
 
 **Rendering pipeline:** Quarto converts `.qmd` → Pandoc → `<file>.typ` (with the template inlined) → Typst compiler → `<file>.pdf`. The template contents are inlined verbatim into the generated `.typ` at the project root, so all image paths in `typst-template.typ` must be relative to the project root (i.e. `_extensions/probity/assets/logo_trim.png`, not `assets/logo_trim.png`).
+
+### Invoice format (`probity-invoice-typst`)
+
+Dependency-free single-page Typst invoice. Lives in `_extensions/probity-invoice/`.
+
+- `_extension.yml` — registers a `typst` format. Referenced as `format: probity-invoice-typst` (short `probity-invoice` does **not** resolve).
+- `typst-template.typ` — defines `probity-invoice(...)`, the brand lets, a `money(value, symbol:)` helper (rounds through integer cents, inserts thousands separators, ASCII minus for negatives), and `compute-totals(items, discount, tax-rate)` (subtotal via `items.fold`; discount is an amount; tax is a fraction of `subtotal − discount`). Layout: header (logo + INVOICE word), BILL TO + metadata mini-table, line-items table (navy header, gold hairline, zebra body), right-aligned totals with a navy TOTAL DUE row, optional notes, and a navy bank-transfer footer pinned to the page bottom with `v(1fr)` (not a page `footer:` — that clipped when the banner was taller than the bottom margin).
+- `typst-show.typ` — wires YAML front-matter into `probity-invoice(...)`.
+
+**Authoring model:** entirely front-matter driven; the `.qmd` body is empty. Money values are **bare numeric strings** (`unit: "2500.00"`, `discount: "5000.00"`) — not YAML numbers — so cents survive Pandoc's float stringification; Typst's `float()` parses them. Line items are a YAML list of `{description, qty, unit}`; `typst-show.typ` emits them via Pandoc's `$it$` anaphoric loop variable (`$for(items)$ (description: [$it.description$], qty: $it.qty$, unit: "$it.unit$"), $endfor$`). **Two reserved-key traps:** the notes field is `invoice-notes`, not `notes` (Quarto renders `notes` into the body too, duplicating it), and dates are strings (Pandoc date objects can't be field-accessed in the partial).
 
 ## Typst version
 

@@ -1,0 +1,60 @@
+---
+format: probity-invoice-typst
+lang: en-GB
+
+# ── Sender (Probity) ─────────────────────────────────────────────
+# Company identity is baked into the template; override here only if needed.
+company-name: "Probity Data Analytics"
+company-address: |
+  Suite 12, Riverside Court
+  Adderley Street, Cape Town, 8001
+company-phone: "+27 21 555 0142"
+company-email: "accounts@probity.example"
+
+# ── Invoice metadata ─────────────────────────────────────────────
+invoice-number: "INV-2026-014"
+issue-date: "23 June 2026"
+due-date: "23 July 2026"
+terms: "Net 30"
+customer-id: "CUST-0042"
+
+# ── Client (BILL TO) ─────────────────────────────────────────────
+client-name: "Northwind Traders (Pty) Ltd"
+client-address: |
+  42 Quarry Industrial Park
+  Durban, 4001
+
+# ── Line items ───────────────────────────────────────────────────
+# `unit` is a bare numeric string (no symbol, no thousands separator).
+# qty may be a whole or fractional number.
+items:
+  - description: "Data engineering consulting — June"
+    qty: 16
+    unit: "2500.00"
+  - description: "Executive dashboard development"
+    qty: 1
+    unit: "40000.00"
+  - description: "Support retainer — 1 month"
+    qty: 1
+    unit: "7500.00"
+
+# ── Totals ───────────────────────────────────────────────────────
+# `discount` is a money string (amount). Omit or set "0" to hide the row.
+discount: "5000.00"
+# `tax-rate` is a fraction (0.15 = 15%); omit or set 0 to hide the row.
+tax-rate: 0.15
+tax-label: "VAT"
+currency: "R"
+
+invoice-notes: "All amounts in ZAR. Please quote the invoice number as the payment reference."
+
+# ── Bank details (footer) ────────────────────────────────────────
+bank-holder: "Probity Data Analytics (Pty) Ltd"
+bank-account: "62345678901"
+bank-name: "First National Bank"
+bank-branch-code: "250655"
+bank-reference: "INV-2026-014"
+footer-email: "accounts@probity.example"
+---
+
+<!-- Body is intentionally empty: every field renders from the YAML above. -->

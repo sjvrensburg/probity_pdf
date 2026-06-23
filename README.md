@@ -7,6 +7,7 @@ Calibri type, and Probity visual identity.
 |---|---|---|---|
 | `probity-typst` | A4 report | Typst (no LaTeX) | Written reports, methodology, deliverables |
 | `probity-slides-typst` | 16:9 slides | Typst (no LaTeX) | Client presentations, slide decks |
+| `probity-invoice-typst` | A4 invoice | Typst (no LaTeX) | Branded invoices (single page, YAML-driven) |
 
 The slide deck ships a card-component library (scenario cards, numbered
 steps, formula / result cards, metric rows, equation boxes) — see
@@ -90,6 +91,61 @@ The footer keys are all optional:
 > The format name is `probity-slides-typst` (the short `probity-slides`
 > does not resolve).
 
+### Invoice
+
+```bash
+cp template-invoice.qmd my-invoice.qmd
+quarto render my-invoice.qmd     # produces my-invoice.pdf
+```
+
+The invoice is **entirely front-matter driven** — every field renders from
+YAML and the body is empty. Money values are **bare numeric strings** (no
+symbol, no thousands separator) so cents survive the YAML→Typst pipeline; the
+template parses them and formats with thousands separators. Quantities may be
+whole or fractional.
+
+```yaml
+---
+format: probity-invoice-typst
+lang: en-GB
+company-name: "Probity Data Analytics"
+company-address: |
+  Suite 12, Riverside Court
+  Cape Town, 8001
+company-phone: "+27 21 555 0142"
+company-email: "accounts@probity.example"
+invoice-number: "INV-2026-014"
+issue-date: "23 June 2026"
+due-date: "23 July 2026"
+terms: "Net 30"
+customer-id: "CUST-0042"
+client-name: "Northwind Traders (Pty) Ltd"
+client-address: |
+  42 Quarry Industrial Park
+  Durban, 4001
+items:
+  - description: "Consulting — June"
+    qty: 16
+    unit: "2500.00"        # money string; amount = qty × unit (auto)
+discount: "5000.00"        # money string; omit / "0" to hide the row
+tax-rate: 0.15             # fraction; omit / 0 to hide the row
+tax-label: "VAT"           # shown as "VAT (15%)"
+currency: "R"
+invoice-notes: "All amounts in ZAR."   # note: 'notes' is reserved by Quarto — use 'invoice-notes'
+bank-holder: "Probity Data Analytics (Pty) Ltd"
+bank-account: "62345678901"
+bank-name: "First National Bank"
+bank-branch-code: "250655"
+bank-reference: "INV-2026-014"
+footer-email: "accounts@probity.example"
+---
+```
+
+The format name is `probity-invoice-typst` (the short `probity-invoice` does
+not resolve). Single A4 page; the bank-transfer footer is pinned to the page
+bottom. There is no auto-pagination — a very long item list will spill onto a
+second page.
+
 ## What's here
 
 | Path | Purpose |
@@ -98,8 +154,11 @@ The footer keys are all optional:
 | `_extensions/probity/typst-template.typ` | Typst template function (report) |
 | `_extensions/probity-slides/` | Typst slide-deck extension |
 | `_extensions/probity-slides/typst-template.typ` | Slide template + card-component library |
+| `_extensions/probity-invoice/` | Typst invoice extension |
+| `_extensions/probity-invoice/typst-template.typ` | Invoice template + money/totals helpers |
 | `template.qmd` | Starter report document |
 | `template-slides.qmd` | Starter slide deck (Typst) |
+| `template-invoice.qmd` | Starter invoice (Typst) |
 | `SKILL.md` | Full guide: usage, brand rules, writing voice |
 | `install.sh` | Installs the report extension into another project |
 
