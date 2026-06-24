@@ -1,5 +1,5 @@
 // Probity Data Analytics — invoice template (typst-template.typ)
-// Brand: navy/gold palette, Carlito. A4 portrait, single-page invoice.
+// Brand: navy/blue palette, Carlito. A4 portrait, single-page invoice.
 // Targets Typst 0.11+ (Quarto 1.5+). All invoice data arrives as function
 // arguments wired from YAML front-matter by typst-show.typ.
 
@@ -52,7 +52,7 @@
 }
 
 // Small tracked uppercase eyebrow label, in a given fill (navy for headings,
-// gold for accents).
+// mid-blue for accents).
 #let _eyebrow(label, fill: probity-navy) = text(
   size: 8.5pt, tracking: 0.12em, weight: "bold", fill: fill,
 )[#upper(label)]
@@ -128,12 +128,12 @@
       #text(size: 30pt, weight: "bold", tracking: 0.04em, fill: probity-navy)[INVOICE]
       #if invoice-number != none [
         #v(2pt)
-        #text(size: 11pt, weight: "bold", fill: probity-gold)[#invoice-number]
+        #text(size: 11pt, weight: "bold", fill: probity-mid-blue)[#invoice-number]
       ]
     ],
   )
   v(10pt)
-  line(length: 100%, stroke: 1.2pt + probity-gold)
+  line(length: 100%, stroke: 1.2pt + probity-navy)
   v(12pt)
 
   // ── Meta row: BILL TO (left), invoice metadata (right) ──
@@ -141,7 +141,7 @@
     columns: (1.25fr, 1fr), column-gutter: 1cm, align: (left, left),
     // BILL TO
     block[
-      #_eyebrow("Bill to", fill: probity-gold)
+      #_eyebrow("Bill to", fill: probity-mid-blue)
       #v(5pt)
       #text(size: 11.5pt, weight: "bold", fill: probity-navy)[#client-name]
       #v(2pt)
@@ -159,12 +159,14 @@
   v(16pt)
 
   // ── Line items ──
+  // No column-gutter: gutters punch white slivers through the navy header and
+  // the zebra fill. Cell padding comes from `inset` instead, so the fills run
+  // edge to edge.
   table(
     columns: (1fr, auto, auto, auto),
-    column-gutter: (8pt,),
     align: (left, right, right, right),
     stroke: (top: 1pt + probity-navy, bottom: 0.6pt + probity-rule, x: none),
-    inset: (x: 9pt, y: 7pt),
+    inset: (x: 10pt, y: 7pt),
     fill: (_, y) => if y == 0 { probity-navy } else if calc.odd(y) { probity-pale-tint } else { white },
     table.header(
       text(fill: white, weight: "bold", size: 9pt)[DESCRIPTION],
@@ -172,7 +174,7 @@
       text(fill: white, weight: "bold", size: 9pt)[UNIT PRICE],
       text(fill: white, weight: "bold", size: 9pt)[AMOUNT],
     ),
-    table.hline(stroke: 1.2pt + probity-gold),
+    table.hline(stroke: 1.2pt + probity-mid-blue),
     ..items.map(it => (
       text(size: 10pt)[#it.description],
       text(size: 10pt)[#it.qty],
@@ -211,7 +213,7 @@
   // ── Notes ──
   if invoice-notes != none {
     v(14pt)
-    _eyebrow("Notes", fill: probity-gold)
+    _eyebrow("Notes", fill: probity-mid-blue)
     v(3pt)
     text(size: 9pt, fill: probity-muted)[#invoice-notes]
   }
@@ -235,7 +237,7 @@
         text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Branch code")],
         text(size: 9.5pt, fill: white)[#bank-account],
         text(size: 9.5pt, fill: white)[#bank-branch-code],
-        text(size: 8.5pt, fill: probity-gold, weight: "bold", tracking: 0.04em)[#upper("Reference")],
+        text(size: 8.5pt, fill: white, weight: "bold", tracking: 0.04em)[#upper("Reference")],
         [],
         text(size: 9.5pt, fill: white)[#bank-reference],
         [],
