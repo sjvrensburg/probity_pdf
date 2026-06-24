@@ -22,6 +22,7 @@
   date: none,
   abstract: none,
   toc: true,
+  toc-depth: 3,
   lang: "en",
   // Running header/footer text — overridable from the YAML front matter.
   header-text: [Data Analytics],          // header, right of the logo
@@ -191,7 +192,7 @@
   if toc {
     outline(
       title: text(size: 14pt, weight: "bold", fill: probity-navy)[Contents],
-      depth: 3,
+      depth: toc-depth,
       indent: auto,
     )
     pagebreak()

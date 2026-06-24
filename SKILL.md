@@ -12,6 +12,7 @@ through Quarto:
 |---|---|---|---|
 | `probity-typst` | A4 report | Typst — no LaTeX required | Written reports, methodology, deliverables |
 | `probity-slides-typst` | 16:9 slides | Typst — no LaTeX required | Client presentations, slide decks |
+| `probity-invoice-typst` | A4 invoice | Typst — no LaTeX required | Single-page branded invoices (front-matter driven) |
 
 The extension lives at `/home/stefan/Documents/probity_pdf/` (the
 `probity_pdf` repository). When working in an external project, install it
@@ -202,6 +203,60 @@ content in `prob-measure([ ... ])`, which displays a red warning box if the
 content exceeds ~13.2 cm. Card helpers take a `height:` parameter; trim text
 or lower the height if a slide overflows. For two-column slides pass an explicit
 `cm` height to the cards (never rely on `height: 100%`, which overflows).
+
+**Invoice front matter** (`format: probity-invoice-typst`):
+
+The invoice is **entirely front-matter driven** — the `.qmd` body stays empty;
+all content arrives through YAML keys.
+
+```yaml
+---
+format: probity-invoice-typst
+company-name: "Probity Data Analytics"
+company-address: "Suite 12, Riverside Court, Cape Town, 8001"
+company-phone: "+27 21 555 0142"
+company-email: "accounts@probity.example"
+invoice-number: "INV-2026-014"
+issue-date: "23 June 2026"        # strings, NOT YAML dates (date objects can't be field-accessed)
+due-date: "23 July 2026"
+terms: "Net 30"
+customer-id: "CUST-0042"
+client-name: "Northwind Traders (Pty) Ltd"
+client-address: "42 Quarry Industrial Park, Durban, 4001"
+items:                            # list of {description, qty, unit}
+  - description: "Data engineering consulting — June"
+    qty: 16
+    unit: "2500.00"               # money values are BARE NUMERIC STRINGS (cents survive Pandoc)
+  - description: "Support retainer — 1 month"
+    qty: 1
+    unit: "7500.00"
+discount: "5000.00"               # an amount (string), not a percentage; omit/0 to hide
+tax-rate: 0.15                    # a fraction; 0 hides the tax row
+tax-label: "VAT"
+currency: "R"
+invoice-notes: "All amounts in ZAR. Quote the invoice number as the reference."
+bank-holder: "Probity Data Analytics (Pty) Ltd"   # omit all bank-* to suppress the navy bank banner
+bank-name: "First National Bank"
+bank-account: "62345678901"
+bank-branch-code: "250655"
+bank-reference: "INV-2026-014"
+footer-email: "accounts@probity.example"
+---
+```
+
+Two reserved-key traps:
+- The notes field is **`invoice-notes`**, not `notes` (Quarto also renders a
+  `notes` key into the body, duplicating it).
+- Dates are **strings**, not YAML dates (Pandoc date objects can't be
+  field-accessed in the template partial).
+
+Money rules: every money value (`unit`, `discount`) is a **bare numeric string**
+so cents survive Pandoc's float stringification. `tax-rate` is a fraction
+(`0.15` = 15%); the displayed percent matches the charged amount, including
+fractional rates (`0.155` → "15.5%"). Per-line amounts are rounded to cents and
+sum to the printed subtotal. Omit all `bank-*` keys and the navy bank-transfer
+banner is suppressed. The format is `probity-invoice-typst` (the short
+`probity-invoice` does **not** resolve).
 
 ### Step 4 — Apply writing conventions
 

@@ -19,6 +19,9 @@ $if(abstract)$
   abstract: [$abstract$],
 $endif$
   toc: $if(toc)$$toc$$else$false$endif$,
+$if(toc-depth)$
+  toc-depth: $toc-depth$,
+$endif$
 $if(lang)$
   lang: "$lang$",
 $endif$
