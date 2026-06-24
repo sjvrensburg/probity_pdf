@@ -129,10 +129,15 @@
     #v(0.5cm)
     #line(length: 26mm, stroke: 1pt + probity-gold)
     #v(0.4cm)
-    #text(size: 11pt, fill: probity-light-blue)[
-      #authors.join(", ")
-      #if date != none [ #h(0.4em) #text(fill: probity-rule)[|] #h(0.4em) #date]
-    ]
+    // Guard against authors.join on an empty array (yields none) and against
+    // emitting a dangling separator/blank byline when no author is supplied.
+    #if authors.len() > 0 or date != none {
+      text(size: 11pt, fill: probity-light-blue)[
+        #if authors.len() > 0 [#authors.join(", ")]
+        #if date != none and authors.len() > 0 [ #h(0.4em) #text(fill: probity-rule)[|] #h(0.4em) ]
+        #if date != none [#date]
+      ]
+    }
     #v(1.4fr)
   ]
 
@@ -146,7 +151,8 @@
 // Measure content height and warn if it exceeds slide body height (~13.2cm).
 // Usable white-slide body is ~13.2cm; navy-slide body depends on header height.
 // Usage: wrap slide content in `prob-measure([ ... ])` to check fit during editing.
-#let prob-measure(content, label: "Content", max-height: 13.2cm) = {
+#let prob-measure(content, label: "Content", max-height: 13.2cm) = context {
+  // `measure` needs a known context (Typst 0.13+), hence the `context` wrapper.
   let measured = measure(content)
   let is-tall = measured.height > max-height
   if is-tall {
@@ -155,8 +161,8 @@
       inset: 10pt,
     )[
       #text(size: 9pt, fill: rgb("#D32F2F"), weight: "bold")[
-        ⚠ Overflow risk: content is #(measured.height.mm.round(decimals: 1))mm \
-        (max safe: #(max-height.mm.round(decimals: 1))mm)
+        ⚠ Overflow risk: content is #calc.round(measured.height.mm(), digits: 1)mm \
+        (max safe: #calc.round(max-height.mm(), digits: 1)mm)
       ]
     ]
     v(0.3cm)
@@ -304,7 +310,9 @@
     )).flatten(),
   )
   #if footnote != none {
-    v(1fr)
+    // v(1fr) only pins to the bottom when the card has a fixed height; with the
+    // default height: auto it collapses to nothing, so fall back to a real gap.
+    if height == auto { v(0.5cm) } else { v(1fr) }
     text(fill: probity-light-blue.transparentize(15%), style: "italic", size: 10pt)[#footnote]
   }
 ]
@@ -323,8 +331,9 @@
     text(size: 13pt, fill: probity-body)[#desc]
   }
   #if footnote != none {
-    v(1fr)
-    v(0.3cm)
+    // v(1fr) only pins to the bottom when the card has a fixed height; with the
+    // default height: auto it collapses to nothing, so fall back to a real gap.
+    if height == auto { v(0.5cm) } else { v(1fr) }
     text(size: 11pt, fill: probity-muted, style: "italic")[#footnote]
   }
 ]

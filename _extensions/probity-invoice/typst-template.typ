@@ -23,9 +23,10 @@
 // emits an ASCII minus for negatives (str(float) yields a U+2212 minus).
 #let money(value, symbol: "R") = {
   let n = float(value)
-  let neg = n < 0
-  let n = calc.abs(n)
-  let cents = calc.round(n * 100)
+  let cents = calc.round(calc.abs(n) * 100)
+  // Derive the sign from the rounded magnitude so a tiny negative that rounds
+  // to zero prints "R 0.00", not "-R 0.00".
+  let neg = n < 0 and cents != 0
   let whole = calc.floor(cents / 100)
   let frac = calc.rem(cents, 100)
   let whole-str = str(whole)
@@ -44,11 +45,20 @@
 // items: array of (description:, qty:, unit:) — `unit` is a money string.
 // discount: money string (amount, not a percentage). tax-rate: fraction.
 #let compute-totals(items, discount: "0", tax-rate: 0) = {
-  let subtotal = items.fold(0.0, (acc, it) => acc + float(it.qty) * float(it.unit))
+  // Round each line extension to cents before summing, so the subtotal equals
+  // the sum of the displayed per-line AMOUNTs (which are themselves rounded).
+  let subtotal = items.fold(0.0, (acc, it) => acc + calc.round(float(it.qty) * float(it.unit), digits: 2))
   let disc = float(discount)
   let taxable = subtotal - disc
   let tax = calc.round(taxable * tax-rate, digits: 2)
   (subtotal: subtotal, discount: disc, tax: tax, total: taxable + tax)
+}
+
+// Format a tax-rate fraction as a percent label, dropping a trailing ".0"
+// (0.15 -> "15", 0.155 -> "15.5") so the printed percent matches the charged tax.
+#let _pct(rate) = {
+  let r = calc.round(rate * 100, digits: 2)
+  if r == calc.round(r) { str(calc.round(r)) } else { str(r) }
 }
 
 // Small tracked uppercase eyebrow label, in a given fill (navy for headings,
@@ -117,13 +127,16 @@
       #image("_extensions/probity-invoice/assets/logo_trim.png", width: 4.6cm)
       #v(4pt)
       #text(size: 13pt, weight: "bold", fill: probity-navy)[#company-name]
-      #if company-address != [] [ #text(size: 9pt, fill: probity-muted)[#company-address] ]
+      #if company-address != [] [
+        #linebreak()
+        #text(size: 9pt, fill: probity-muted)[#company-address]
+      ]
       #v(1pt)
       #text(size: 9pt, fill: probity-muted)[
-        #if company-phone != none [#company-phone#h(1em)]]
+        #if company-phone != none [#company-phone#h(1em)]
         #if company-email != none [#company-email]
       ]
-    ,
+    ],
     align(right + horizon)[
       #text(size: 30pt, weight: "bold", tracking: 0.04em, fill: probity-navy)[INVOICE]
       #if invoice-number != none [
@@ -196,7 +209,7 @@
           (text(size: 9.5pt, fill: probity-muted)[Discount], text(size: 10pt, fill: probity-mid-blue)[#money(-t.discount, symbol: currency)],)
         } else { () }),
         ..(if show-tax {
-          (text(size: 9.5pt, fill: probity-muted)[#tax-label #if tax-rate != 0 [ (#(str(calc.round(tax-rate * 100)))%)]], text(size: 10pt)[#money(t.tax, symbol: currency)],)
+          (text(size: 9.5pt, fill: probity-muted)[#tax-label (#_pct(tax-rate)%)], text(size: 10pt)[#money(t.tax, symbol: currency)],)
         } else { () }),
       )
       #block(
@@ -226,24 +239,28 @@
   // bottom of the content area (within the page margins, so nothing clips).
   v(1fr)
   block(width: 100%, spacing: 0pt)[
-    #block(width: 100%, fill: probity-navy, inset: (x: 14pt, y: 8pt))[
-      #grid(
-        columns: (1fr,) * 2, column-gutter: 18pt, row-gutter: 3pt,
-        text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Accountholder")],
-        text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Bank")],
-        text(size: 9.5pt, fill: white)[#bank-holder],
-        text(size: 9.5pt, fill: white)[#bank-name],
-        text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Account no.")],
-        text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Branch code")],
-        text(size: 9.5pt, fill: white)[#bank-account],
-        text(size: 9.5pt, fill: white)[#bank-branch-code],
-        text(size: 8.5pt, fill: white, weight: "bold", tracking: 0.04em)[#upper("Reference")],
-        [],
-        text(size: 9.5pt, fill: white)[#bank-reference],
-        [],
-      )
-    ]
-    #v(6pt)
+    // Only draw the navy bank banner when bank details are supplied — otherwise
+    // an invoice paid by other means would ship an empty labelled block.
+    #if bank-holder != none {
+      block(width: 100%, fill: probity-navy, inset: (x: 14pt, y: 8pt))[
+        #grid(
+          columns: (1fr,) * 2, column-gutter: 18pt, row-gutter: 3pt,
+          text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Accountholder")],
+          text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Bank")],
+          text(size: 9.5pt, fill: white)[#bank-holder],
+          text(size: 9.5pt, fill: white)[#bank-name],
+          text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Account no.")],
+          text(size: 8.5pt, fill: probity-light-blue, tracking: 0.04em)[#upper("Branch code")],
+          text(size: 9.5pt, fill: white)[#bank-account],
+          text(size: 9.5pt, fill: white)[#bank-branch-code],
+          text(size: 8.5pt, fill: white, weight: "bold", tracking: 0.04em)[#upper("Reference")],
+          [],
+          text(size: 9.5pt, fill: white)[#bank-reference],
+          [],
+        )
+      ]
+      v(6pt)
+    }
     #align(center, text(size: 9pt, fill: probity-muted)[
       Thank you for your business.#if footer-email != none [
         #h(1em) Questions? #footer-email]

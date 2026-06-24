@@ -434,8 +434,11 @@ font stacks, layout), then re-render `template.qmd` to confirm. The
 `typst-show.typ` file wires front-matter variables into the template function;
 only edit it to expose additional variables.
 
-The template targets Typst 0.10 (bundled with Quarto 1.4) and avoids
-`context { }` blocks and `table.cell` selectors, which require Typst 0.11+.
+The report template targets Typst 0.11+ (Quarto 1.5+) and uses `context { }`
+blocks for the page-aware running header/footer and `table.cell` /
+`table.header` selectors; `_extension.yml` pins `quarto-required: ">=1.5.0"`.
+The slide deck uses newer Typst features (single-argument `measure`, `stroke`
+`rest:` keys) and targets Typst 0.13+ (Quarto 1.7+), pinned accordingly.
 
 **Slides:** edit `_extensions/probity-slides/typst-template.typ` — brand
 constants, the `probity-slides()` page/chrome function, and the card helpers.
