@@ -70,7 +70,7 @@ $if(bank-reference)$
   bank-reference: [$bank-reference$],
 $endif$
 $if(footer-email)$
-  footer-email: "$footer-email$",
+  footer-email: [$footer-email$],
 $endif$
 $if(lang)$
   lang: "$lang$",
