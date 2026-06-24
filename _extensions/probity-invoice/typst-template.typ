@@ -120,33 +120,41 @@
   if due-date != none { meta-rows.push(_meta-row("Due date", due-date)) }
   if terms != none { meta-rows.push(_meta-row("Terms", terms)) }
 
-  // ── Header: logo + company (left), INVOICE word + number (right) ──
+  // ── Header: logo (left) and INVOICE word + number (right). The INVOICE
+  // wordmark is boxed to the logo's height and vertically centred within it,
+  // so it sits on the logo's mid-line; the invoice number tucks just beneath. ──
+  let logo-w = 4.6cm
+  let logo-h = logo-w * 708 / 2283  // logo_trim.png is 2283 x 708
   grid(
-    columns: (1fr, auto), column-gutter: 1cm, align: (left, right),
+    columns: (1fr, auto), column-gutter: 1cm, align: (left + top, right + top),
+    image("_extensions/probity-invoice/assets/logo_trim.png", width: logo-w),
     block[
-      #image("_extensions/probity-invoice/assets/logo_trim.png", width: 4.6cm)
-      #v(4pt)
-      #text(size: 13pt, weight: "bold", fill: probity-navy)[#company-name]
-      #if company-address != [] [
-        #linebreak()
-        #text(size: 9pt, fill: probity-muted)[#company-address]
-      ]
-      #v(1pt)
-      #text(size: 9pt, fill: probity-muted)[
-        #if company-phone != none [#company-phone#h(1em)]
-        #if company-email != none [#company-email]
-      ]
-    ],
-    align(right + horizon)[
-      #text(size: 30pt, weight: "bold", tracking: 0.04em, fill: probity-navy)[INVOICE]
+      #box(height: logo-h)[#align(right + horizon)[#text(size: 30pt, weight: "bold", tracking: 0.04em, fill: probity-navy)[INVOICE]]]
       #if invoice-number != none [
-        #v(2pt)
-        #text(size: 11pt, weight: "bold", fill: probity-mid-blue)[#invoice-number]
+        #v(3pt)
+        #align(right)[#text(size: 11pt, weight: "bold", fill: probity-mid-blue)[#invoice-number]]
       ]
     ],
   )
-  v(10pt)
-  line(length: 100%, stroke: 1.2pt + probity-navy)
+  v(16pt)
+
+  // ── Sender details under the logo (the logo already carries the company
+  // name): the address, then a clearly-labelled contact line set apart from it. ──
+  block[
+    #let _lbl(s) = text(size: 8pt, weight: "bold", tracking: 0.05em, fill: probity-mid-blue)[#upper(s)]
+    #let _det = ()
+    #if company-address != [] {
+      _det.push(text(size: 9.5pt, fill: probity-muted)[#company-address])
+    }
+    #if (company-phone != none) or (company-email != none) {
+      _det.push(text(size: 9.5pt, fill: probity-muted)[#if company-phone != none [#_lbl("Tel")#h(0.5em)#company-phone]#if (company-phone != none) and (company-email != none) [#h(2.4em)]#if company-email != none [#_lbl("Email")#h(0.5em)#company-email]])
+    }
+    // The rule is the final element of the same stack, so the gap above the
+    // contact line (to the address) and below it (to the rule) share one spacing
+    // value and come out evenly distributed.
+    #_det.push(line(length: 100%, stroke: 1.2pt + probity-navy))
+    #if _det.len() > 0 { stack(spacing: 12pt, .._det) }
+  ]
   v(12pt)
 
   // ── Meta row: BILL TO (left), invoice metadata (right) ──
